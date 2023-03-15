@@ -90,7 +90,9 @@ class Vector:
         length = self.length()
         if length == 0:
             raise Exception(ZeroDivisionError)
-        return Vector(self.x / length, self.y / length, self.z / length)
+        return Vector(self.x / length,
+                      self.y / length,
+                      self.z / length)
 
     def __str__(self):
         return f"({self.x}, {self.y}, {self.z})"
