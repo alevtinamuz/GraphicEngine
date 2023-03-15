@@ -17,14 +17,25 @@ vector_3 = Vector(point_1)
 
 
 print("................ТОЧКИ................")
+<<<<<<< HEAD
+=======
+print("point as list: ", point_1.as_list())
+>>>>>>> origin/master
 print("sum of two points: ", point_1 + point_2)
 print("difference of two points: ", point_1 - point_2)
 print("point * number: ", point_1 * 5.5)
 print("number * point: ", 5.5 * point_1)
 print("point / number: ", point_1 / 2)
+<<<<<<< HEAD
 print("distance between two points: ", Point.distance(point_1, point_2))
 print("\n")
 print("...............ВЕКТОРЫ...............")
+=======
+print("distance between two points: ", Point.distance_between(point_1, point_2))
+print("\n")
+print("...............ВЕКТОРЫ...............")
+print("vector as list: ", vector_1.as_list())
+>>>>>>> origin/master
 print("vector as point: ", vector_3)
 print("sum of two vectors: ", vector_1 + vector_2)
 print("difference of two vectors: ", vector_1 - vector_2)

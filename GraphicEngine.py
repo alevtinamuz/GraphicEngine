@@ -1,12 +1,18 @@
 import math
 
+<<<<<<< HEAD
 
 class Point:
     def __init__(self, x: float = 0, y: float = 0, z: float = 0):
+=======
+class Point:
+    def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0):
+>>>>>>> origin/master
         self.x = x
         self.y = y
         self.z = z
 
+<<<<<<< HEAD
     def __add__(self, other):
         return Point(self.x + other.x,
                     self.y + other.y,
@@ -21,10 +27,33 @@ class Point:
         return Point(self.x * other,
                     self.y * other,
                     self.z * other)
+=======
+    def as_list(self):
+        return [self.x, self.y, self.z]
+
+    def __add__(self, other):
+        x = self.x + other.x
+        y = self.y + other.y
+        z = self.z + other.z
+        return Point(x, y, z)
+
+    def __sub__(self, other):
+        x = self.x - other.x
+        y = self.y - other.y
+        z = self.z - other.z
+        return Point(x, y, z)
+
+    def __mul__(self, other):
+        x = self.x * other
+        y = self.y * other
+        z = self.z * other
+        return Point(x, y, z)
+>>>>>>> origin/master
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
+<<<<<<< HEAD
         if other == 0:
             raise Exception(ZeroDivisionError)
         return Point(self * (1 / other))
@@ -34,11 +63,31 @@ class Point:
 
     def __str__(self):
         return f"Point({self.x}, {self.y}, {self.z})"
+=======
+        try:
+            x = self.x / other
+            y = self.y / other
+            z = self.z / other
+            return Point(x, y, z)
+        except ZeroDivisionError:
+            print('\nZeroDivisionError!')
+
+    def distance_between(self, other):
+        diff = self - other
+        return math.sqrt(diff.x ** 2 + diff.y ** 2 + diff.z ** 2)
+
+    def __str__(self):
+        return "({0}, {1}, {2})".format(self.x, self.y, self.z)
+>>>>>>> origin/master
 
 
 
 class Vector:
+<<<<<<< HEAD
     def __init__(self, x: [float, Point] = 0, y: float = 0, z: float = 0):
+=======
+    def __init__(self, x: [float, Point] = 0.0, y: float = 0.0, z: float = 0.0):
+>>>>>>> origin/master
         if isinstance(x, (int, float)):
             self.x = x
             self.y = y
@@ -48,6 +97,7 @@ class Vector:
             self.y = x.y
             self.z = x.z
 
+<<<<<<< HEAD
     def as_point(self):
         return Point(x = self.x,
                     y = self.y,
@@ -62,11 +112,31 @@ class Vector:
         return Vector(self.x - other.x,
                       self.y - other.y,
                       self.z - other.z)
+=======
+    def as_list(self):
+        return [self.x, self.y, self.z]
+
+    def as_point(self):
+        return Point(x = self.x, y = self.y, z = self.z)
+
+    def __add__(self, other):
+        x = self.x + other.x
+        y = self.y + other.y
+        z = self.z + other.z
+        return Vector(x, y, z)
+
+    def __sub__(self, other):
+        x = self.x - other.x
+        y = self.y - other.y
+        z = self.z - other.z
+        return Vector(x, y, z)
+>>>>>>> origin/master
 
     def scalar_product(self, other):
         return self.x * other.x + self.y * other.y + self.z * other.z
 
     def vector_product(self, other):
+<<<<<<< HEAD
         return Vector(self.y * other.z - self.z * other.y,
                       self.z * other.x - self.x * other.z,
                       self.x * other.y - self.y * other.x)
@@ -76,12 +146,26 @@ class Vector:
             return Vector(self.x * other,
                           self.y * other,
                           self.z * other)
+=======
+        x = self.y * other.z - self.z * other.y
+        y = self.z * other.x - self.x * other.z
+        z = self.x * other.y - self.y * other.x
+        return Vector(x, y, z)
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            x = self.x * other
+            y = self.y * other
+            z = self.z * other
+            return Vector(x, y, z)
+>>>>>>> origin/master
         elif isinstance(other, Vector):
             return Vector.scalar_product(self, other)
 
     __rmul__ = __mul__
 
     def __pow__(self, other):
+<<<<<<< HEAD
         return Vector.vector_product(self, other)
 
     def length(self):
@@ -95,6 +179,33 @@ class Vector:
 
     def __str__(self):
         return f"Point({self.x}, {self.y}, {self.z})"
+=======
+        x = self.y * other.z - self.z * other.y
+        y = self.z * other.x - self.x * other.z
+        z = self.x * other.y - self.y * other.x
+        return Vector(x, y, z)
+
+    def length(self):
+        return Point.distance_between(VectorSpace.initial_point, self)
+
+    def normalize(self):
+        try:
+            length = self.length()
+            x = self.x
+            y = self.y
+            z = self.z
+            if length != 0:
+                x /= length
+                y /= length
+                z /= length
+                return Vector(x, y, z)
+        except ZeroDivisionError:
+            print('Ошибка! Деление на 0')
+
+    def __str__(self):
+        return "({0}, {1}, {2})".format(self.x, self.y, self.z)
+
+>>>>>>> origin/master
 
 
 class VectorSpace:
@@ -107,6 +218,10 @@ class VectorSpace:
         self.basis_z = basis_z
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 class Camera:
     def __init__(self, position: Point, look_at: [Vector, Point], FOV: float, draw_distance: float):
         height = 1080
@@ -122,10 +237,27 @@ class Camera:
         pass
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 class Object:
     def __init__(self, position: Point, rotation: Vector):
         self.position = position
         self.rotation = rotation
 
+<<<<<<< HEAD
     def contains(self, point: Point):
         return False
+=======
+    def contains(self):
+        BOOl = True
+        return BOOl
+
+
+
+class Sphere:
+    def __init__(self, center: Point, radius: float = 0.0):
+        self.radius = radius
+        self.center = center
+>>>>>>> origin/master
