@@ -9,33 +9,31 @@ class Point:
 
     def __add__(self, other):
         return Point(self.x + other.x,
-                    self.y + other.y,
-
-                    self.z + other.z)
+                     self.y + other.y,
+                     self.z + other.z)
 
     def __sub__(self, other):
         return Point(self.x - other.x,
-                    self.y - other.y,
-                    self.z - other.z)
+                     self.y - other.y,
+                     self.z - other.z)
 
     def __mul__(self, other):
         return Point(self.x * other,
-                    self.y * other,
-                    self.z * other)
+                     self.y * other,
+                     self.z * other)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other):
         if other == 0:
             raise Exception(ZeroDivisionError)
-        return Point(self * (1 / other))
+        return self * (1 / other)
 
     def distance(self, other):
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2 + (self.z - other.z) ** 2)
 
     def __str__(self):
-        return f"Point({self.x}, {self.y}, {self.z})"
-
+        return f"({self.x}, {self.y}, {self.z})"
 
 
 class Vector:
@@ -50,9 +48,9 @@ class Vector:
             self.z = x.z
 
     def as_point(self):
-        return Point(x = self.x,
-                    y = self.y,
-                    z = self.z)
+        return Point(self.x,
+                     self.y,
+                     self.z)
 
     def __add__(self, other):
         return Vector(self.x + other.x,
@@ -95,7 +93,7 @@ class Vector:
         return Vector(self.x / length, self.y / length, self.z / length)
 
     def __str__(self):
-        return f"Point({self.x}, {self.y}, {self.z})"
+        return f"({self.x}, {self.y}, {self.z})"
 
 
 class VectorSpace:
