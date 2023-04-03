@@ -286,7 +286,7 @@ class Vector(Matrix):
 
 
 def BilinearForm(matrix, vector_1, vector_2):
-    if matrix.height == matrix.width and matrix.height == vector_1.dimension and matrix.height == vector_2.dimension:
+    if matrix.height == matrix.width & matrix.height == vector_1.dimension & matrix.height == vector_2.dimension:
         return sum([matrix[i][j] * vector_1[i] * vector_2[j]
                     for i in range(matrix.height)
                     for j in range(matrix.height)])
