@@ -17,9 +17,6 @@ Vector_Space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 
 
 
 
-print()
-print("\n")
-
 print("...............МАТРИЦЫ...............")
 print("sum of two matrices")
 print(matrix_3 + matrix_3)
