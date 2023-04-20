@@ -1,5 +1,5 @@
 import pytest
-from GraphicEngine import *
+from math_classes import *
 
 
 class TestMatrix:
@@ -13,7 +13,7 @@ class TestMatrix:
         assert result
 
     def test_exception_init(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(MatrixExceptions):
             result = Matrix([[1.0, 2.0],
                              [3.0]])
 
@@ -138,7 +138,7 @@ class TestMatrix:
 
     def test_gram(self):
         matrix = Matrix([[1.0, 2.0],
-                         [3.0, 4.0]]).gram_matrix()
+                         [3.0, 4.0]]).gram()
 
         matrix_gram = Matrix([[5.0, 11.0],
                               [11.0, 25.0]])
@@ -184,7 +184,7 @@ class TestMatrix:
         assert result
 
     def test_exception_additional_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(MatrixExceptions):
             matrix = Matrix([[2.0, 3.0],
                              [5.1, 3.8],
                              [8.5, 8.0]])
@@ -225,7 +225,7 @@ class TestMatrix:
         assert result
 
     def test_exception_difference_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(MatrixExceptions):
             matrix = Matrix([[2.0, 3.0],
                              [5.1, 3.8],
                              [8.5, 8.0]])
@@ -292,7 +292,7 @@ class TestMatrix:
         assert result
 
     def test_exception_multiply_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(MatrixExceptions):
             matrix = Matrix([[2.0, 4.0],
                              [6.0, 2.0],
                              [8.0, 8.0]])
@@ -331,7 +331,7 @@ class TestMatrix:
         assert result
 
     def test_exception_division_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(MatrixExceptions):
             matrix_1 = Matrix([[2.0, 4.0],
                                [6.0, 2.0],
                                [8.0, 8.0]])
@@ -345,7 +345,7 @@ class TestMatrix:
             assert result
 
     def test_exception_zero_division(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(MatrixExceptions):
             matrix_1 = Matrix([[2.0, 4.0],
                                [6.0, 2.0],
                                [8.0, 8.0]])
@@ -374,7 +374,7 @@ class TestVector:
         assert result
 
     def test_exception_init(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(VectorExceptions):
             vector = Vector(1.0)
 
             result = isinstance(vector, Vector)
@@ -398,7 +398,7 @@ class TestVector:
         assert result
 
     def test_exception_scalar_product_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(VectorExceptions):
             vector_1 = Vector([0.0, 0.0, 0.0])
             vector_2 = Matrix([[1.8, 2.1, 4.5]])
 
@@ -425,7 +425,7 @@ class TestVector:
         assert result
 
     def test_exception_vector_product_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(VectorExceptions):
             vector_1 = Vector([1.0, 2.0, 3.0])
             vector_2 = Matrix([[1.8, 2.1, 4.5]])
 
@@ -473,7 +473,7 @@ class TestVector:
         assert result
 
     def test_exception_addition_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(VectorExceptions):
             vector_1 = Vector([0.0, 0.0, 0.0])
             vector_2 = Vector(1.0)
 
@@ -499,7 +499,7 @@ class TestVector:
         assert result
 
     def test_exception_difference_wrong_types(self):
-        with pytest.raises(Exceptions):
+        with pytest.raises(VectorExceptions):
             vector_1 = Vector([0.0, 0.0, 0.0])
             vector_2 = Vector(1.0)
 
@@ -541,20 +541,124 @@ class TestVector:
 
         assert result
 
-    # def test_exception_multiply_wrong_types(self):
-    #     with pytest.raises(Exceptions):
-    #         vector_1 = Vector([0.0, 0.0, 0.0])
-    #         vector_2 = Vector(1.0)
-    #
-    #         result = (vector_2 * vector_1)
-    #
-    #         assert result
-    #
-    # def test_exception_multiply_wrong_sizes(self):
-    #     with pytest.raises(VectorExceptions):
-    #         vector_1 = Vector([0.0, 0.0, 0.0])
-    #         vector_2 = Vector(Matrix([[1.8, 2.1]]))
-    #
-    #         result = (vector_2 - vector_1)
-    #
-    #         assert result
+    def test_exception_multiply_wrong_types(self):
+        with pytest.raises(Exceptions):
+            vector_1 = Vector([0.0, 0.0, 0.0])
+            vector_2 = Vector(1.0)
+
+            result = (vector_2 * vector_1)
+
+            assert result
+
+    def test_exception_multiply_wrong_sizes(self):
+        with pytest.raises(VectorExceptions):
+            vector_1 = Vector([0.0, 0.0, 0.0])
+            vector_2 = Vector(Matrix([[1.8, 2.1]]))
+
+            result = (vector_2 - vector_1)
+
+            assert result
+
+
+class TestPoint:
+    def test_init(self):
+        point = Point([1.0, 2.0, 3.0])
+
+        result = isinstance(point, Point)
+
+        assert result
+
+    def test_additional_point_vector(self):
+        point = Point([1.0, 2.0, 3.0])
+        vector = Vector([1.0, 2.0, 3.0])
+        additional = Point([2.0, 4.0, 6.0])
+
+        result = (point + vector == additional)
+
+        assert result
+
+    def test_additional_vector_point(self):
+        point = Point([1.0, 2.0, 3.0])
+        vector = Vector([1.0, 2.0, 3.0])
+        additional = Point([2.0, 4.0, 6.0])
+
+        result = (vector + point == additional)
+
+        assert result
+
+    def test_exception_additional_wrong_types(self):
+        with pytest.raises(PointExceptions):
+            point = Point([1.0, 2.0, 4.0])
+            matrix = Matrix([[2.0]])
+
+            assert (point + matrix)
+
+    def test_exception_additional_wrong_sizes(self):
+        with pytest.raises(PointExceptions):
+            point = Point([1.0, 2.0, 3.0])
+            vector = Vector([1.0, 2.0])
+
+            assert (point + vector)
+
+    def test_difference_point_vector(self):
+        point = Point([1.0, 2.0, 3.0])
+        vector = Vector([1.0, 2.0, 3.0])
+        additional = Point([0.0, 0.0, 0.0])
+
+        result = (point - vector == additional)
+
+        assert result
+
+    def test_exception_difference_wrong_types(self):
+        with pytest.raises(PointExceptions):
+            point = Point([1.0, 2.0, 4.0])
+            matrix = Matrix([[2.0]])
+
+            assert (matrix - point)
+
+    def test_exception_additional_wrong_sizes(self):
+        with pytest.raises(PointExceptions):
+            point = Point([1.0, 2.0, 3.0])
+            vector = Vector([1.0, 2.0])
+
+            assert (vector - point)
+
+
+class TestVectorSpace:
+    def test_init(self):
+        vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+
+        result = isinstance(vector_space, VectorSpace)
+
+        assert result
+
+    def test_scalar_product(self):
+        vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+        vector_1 = Vector([1.0, 2.0, 3.0])
+        vector_2 = Vector([1.0, 2.0, 3.0])
+
+        result = (vector_space.scalar_product(vector_1, vector_2) == vector_1 % vector_2)
+
+        assert result
+
+    def test_as_vector(self):
+        vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+        point = Point([1.0, 2.0, 3.0])
+        point_as_vector = Vector([1.0, 2.0, 3.0])
+
+        result = (vector_space.as_vector(point) == point_as_vector)
+
+        assert result
+
+    def test_exception_as_vector_wrong_sizes(self):
+        with pytest.raises(VectorSpaceExceptions):
+            vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+            point = Point([1.0, 2.0])
+
+            result = (vector_space.as_vector(point))
+
+            assert result
+
+
+# class TestCoordinateSystem:
+#     def test_init(self):

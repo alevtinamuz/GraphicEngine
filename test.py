@@ -1,4 +1,4 @@
-from GraphicEngine import *
+from math_classes import *
 
 
 vector_1 = Vector([1.0, 2.0, 3.0])
@@ -39,7 +39,7 @@ print(Matrix.identity(5))
 print("inverse matrix")
 print(~matrix_3)
 print("gram matrix")
-print(matrix_0.gram_matrix())
+print(matrix_0.gram())
 print("\n")
 
 print("...............ВЕКТОРЫ...............")

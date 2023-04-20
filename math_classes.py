@@ -1,5 +1,5 @@
 import math
-from exceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions
+from exceptions import MatrixExceptions, VectorExceptions, PointExceptions, VectorSpaceExceptions
 
 
 @property
@@ -8,18 +8,16 @@ def attribute_error():
 
 
 class Matrix:
-    def __init__(self, elements: "[list[list[float]]], Vector"):
+    def __init__(self, elements: "list[list[float]], Vector"):
         if isinstance(elements, Vector):
-            if elements.is_transpose is True:
+            if elements.is_transpose:
                 self.elements = elements.vector
                 self.rows = elements.dimension
                 self.columns = 1
-
             else:
                 self.elements = [elements.vector]
                 self.rows = 1
                 self.columns = elements.dimension
-
         else:
             self.elements = elements
             self.rows = len(elements)
@@ -33,7 +31,7 @@ class Matrix:
         return self.rows == self.columns
 
     def size(self) -> "int":
-        return len(self.elements), len(self.elements[0])
+        return self.rows, self.columns
 
     def determinant(self) -> "float":
         if not self.is_square():
@@ -112,7 +110,7 @@ class Matrix:
     def product(self: "list[float]", other: "list[float]") -> "float":
         return sum([self[i] * other[i] for i in range(len(self))])
 
-    def gram_matrix(self) -> "Matrix":
+    def gram(self) -> "Matrix":
         return Matrix([[Matrix.product(self.elements[i], self.elements[j])
                         for i in range(self.rows)]
                        for j in range(self.rows)])
@@ -141,7 +139,7 @@ class Matrix:
 
     def __add__(self, other: "Matrix") -> "Matrix":
         if not isinstance(other, Matrix):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
         else:
             if not self.size() == other.size():
@@ -154,7 +152,7 @@ class Matrix:
 
     def __sub__(self, other: "Matrix") -> "Matrix":
         if not isinstance(other, Matrix):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
         else:
             if not self.size() == other.size():
@@ -180,17 +178,17 @@ class Matrix:
                                 for j in range(other.columns)]
                                for i in range(self.rows)])
         else:
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
     __rmul__ = __mul__
 
     def __truediv__(self, other: "float") -> "Matrix":
         if not isinstance(other, (int, float)):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
         else:
             if other == 0:
-                raise Exceptions(Exceptions.ZERO_DIVISION)
+                raise MatrixExceptions(MatrixExceptions.ZERO_DIVISION)
 
             else:
                 return Matrix([[self.elements[i][j] * (1 / other)
@@ -203,18 +201,18 @@ class Matrix:
     def __getitem__(self, index: "float"):
         return self.elements[index]
 
-    def __str__(self):
-        return '\n'.join([''.join(['{:8}'.format(round(item, 3)) for item in rows]) for rows in self.elements])
+    def __repr__(self):
+        return f'{self.elements}'
 
 
 class Vector(Matrix):
     def __init__(self, vector: "[list[float], [list[list[float]]], Matrix]"):
         if not isinstance(vector, list) and not isinstance(vector, Matrix):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
         if isinstance(vector, Matrix):
             if 1 not in (vector.rows, vector.columns):
-                raise MatrixExceptions(MatrixExceptions.WRONG_SIZE)
+                raise VectorExceptions(VectorExceptions.WRONG_SIZE)
 
             self.dimension = [item for item in (vector.rows, vector.columns) if item != 1]
             self.vector = vector
@@ -222,15 +220,17 @@ class Vector(Matrix):
         if isinstance(vector, list) and isinstance(vector[0], list):
             for i in range(len(vector) - 1):
                 if len(vector[i]) != len(vector[i + 1]):
-                    raise MatrixExceptions(MatrixExceptions.WRONG_INIT)
+                    raise VectorExceptions(VectorExceptions.WRONG_INIT)
 
         elif isinstance(vector[0], list):
-            self.is_transpose = (len(vector[0]) == 1)
-            if len(vector[0]) == 1:  # [[1], [2], [3]]
+            if len(vector[0]) == 1:
+                # [[1], [2], [3]]
                 self.vector = vector
-                self.dimension = len(vector)
+                self.is_transpose = True
+                self.dimension = len(vector[0])
             else:  # [[1, 2, 3]]
                 self.vector = vector[0]
+                self.is_transpose = False
                 self.dimension = len(vector[0])
 
         elif isinstance(vector[0], (int, float)):  # [1, 2, 3]
@@ -243,7 +243,7 @@ class Vector(Matrix):
 
     def scalar_product(self, other: "Vector") -> "float":
         if not isinstance(other, Vector):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
         else:
             if not self.dimension == other.dimension:
@@ -254,7 +254,7 @@ class Vector(Matrix):
 
     def vector_product(self, other: "Vector") -> "Vector":
         if not isinstance(other, Vector):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
         else:
             if not (self.dimension == 3 and other.dimension == 3):
@@ -269,7 +269,7 @@ class Vector(Matrix):
         return math.sqrt(self % self)
 
     def transpose(self) -> "Vector":
-        self.vector = Vector(self.as_matrix().transpose().elements).vector
+        self.vector = Vector(self.as_matrix().transpose())
         self.is_transpose = not self.is_transpose
         return self
 
@@ -292,13 +292,13 @@ class Vector(Matrix):
             return Vector(self.as_matrix() * other.as_matrix())
 
         else:
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
     __rmul__ = __mul__
 
     def __mod__(self, other: "Vector") -> "Vector":
         if not isinstance(other, Vector):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
         else:
             return Vector.scalar_product(self, other)
@@ -313,7 +313,7 @@ class Vector(Matrix):
 
     def __add__(self, other: "Vector") -> "Vector":
         if not isinstance(other, Vector):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
         else:
             if not self.dimension == other.dimension:
@@ -330,7 +330,7 @@ class Vector(Matrix):
 
     def __sub__(self, other: "Vector") -> "Vector":
         if not isinstance(other, Vector):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
         else:
             if not self.dimension == other.dimension:
@@ -345,7 +345,7 @@ class Vector(Matrix):
 
                 return Vector(self.as_matrix() - other.as_matrix())
 
-    def __str__(self):
+    def __repr__(self):
         return f'{self.vector}'
 
     is_square = attribute_error
@@ -374,7 +374,7 @@ def BilinearForm(matrix, vector_1: "Vector", vector_2: "Vector") -> "float":
 class Point(Vector):
     def __add__(self, other: "Vector") -> "Point":
         if not isinstance(other, Vector):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise PointExceptions(PointExceptions.WRONG_TYPES)
         else:
             if not self.dimension == other.dimension:
                 raise PointExceptions(PointExceptions.WRONG_SIZES)
@@ -385,7 +385,7 @@ class Point(Vector):
 
     def __sub__(self, other: "Vector") -> "Point":
         if not isinstance(other, Vector):
-            raise Exceptions(Exceptions.WRONG_TYPES)
+            raise PointExceptions(PointExceptions.WRONG_TYPES)
         else:
             if not self.dimension == other.dimension:
                 raise PointExceptions(PointExceptions.WRONG_SIZES)

@@ -15,9 +15,14 @@ class MatrixExceptions(Exceptions):
 
 
 class VectorExceptions(MatrixExceptions):
+    WRONG_INIT = "This is not vectors."
     WRONG_VECTOR_PRODUCT = "Enter vectors in 3-dimensional space."
     WRONG_SIZES = "Different sizes of vectors."
 
 
 class PointExceptions(MatrixExceptions):
     WRONG_SIZES = "Different sizes of points."
+
+
+class VectorSpaceExceptions(Exceptions):
+    WRONG_SIZES = "Different sizes of point and basis."
