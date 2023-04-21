@@ -1,6 +1,6 @@
 import pytest
 from math_classes import *
-
+from exceptions import Exceptions
 
 class TestMatrix:
     def test_init(self):
@@ -147,7 +147,7 @@ class TestMatrix:
 
         assert result
 
-    def test_equivalent(self):
+    def test_equal(self):
         matrix = Matrix([[1.0, 2.0, 3.0],
                          [4.0, 5.0, 6.0],
                          [7.0, 8.0, 9.0]])
@@ -156,7 +156,7 @@ class TestMatrix:
 
         assert result
 
-    def test_equivalent(self):
+    def test_exception_equal(self):
         with pytest.raises(MatrixExceptions):
             matrix = Matrix([[1.0, 2.0, 3.0],
                             [4.0, 5.0, 6.0],
@@ -535,7 +535,7 @@ class TestVector:
     def test_multiply_vectors(self):
         vector_1 = Vector([1.0, 2.0, 3.0])
         vector_2 = Vector([[2.0], [4.0], [6.0]])
-        vector_answer = Vector([12])
+        vector_answer = Vector([28])
 
         result = (vector_1 * vector_2 == vector_answer)
 
@@ -610,14 +610,14 @@ class TestPoint:
         assert result
 
     def test_exception_difference_wrong_types(self):
-        with pytest.raises(PointExceptions):
+        with pytest.raises(AttributeError):
             point = Point([1.0, 2.0, 4.0])
             matrix = Matrix([[2.0]])
 
             assert (matrix - point)
 
-    def test_exception_additional_wrong_sizes(self):
-        with pytest.raises(PointExceptions):
+    def test_exception_difference_wrong_sizes(self):
+        with pytest.raises(VectorExceptions):
             point = Point([1.0, 2.0, 3.0])
             vector = Vector([1.0, 2.0])
 
@@ -651,7 +651,7 @@ class TestVectorSpace:
         assert result
 
     def test_exception_as_vector_wrong_sizes(self):
-        with pytest.raises(VectorSpaceExceptions):
+        with pytest.raises(MatrixExceptions):
             vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
             point = Point([1.0, 2.0])
 
@@ -660,5 +660,21 @@ class TestVectorSpace:
             assert result
 
 
-# class TestCoordinateSystem:
-#     def test_init(self):
+class TestCoordinateSystem:
+    def test_init(self):
+        point = Point([1.0, 2.0, 3.0])
+        vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+
+        result = isinstance(CoordinateSystem(point, vector_space), CoordinateSystem)
+
+        assert result
+
+    def test_exception_init(self):
+        with pytest.raises(Exceptions):
+            vector = Vector([1.0, 2.0, 3.0])
+            vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+
+            result = CoordinateSystem(vector, vector_space)
+
+            assert result
+

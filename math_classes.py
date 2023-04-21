@@ -1,9 +1,9 @@
 import math
-from exceptions import MatrixExceptions, VectorExceptions, PointExceptions, VectorSpaceExceptions
+from exceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions, VectorSpaceExceptions
 
 
 @property
-def attribute_error():
+def attribute_error(self):
     raise AttributeError
 
 
@@ -42,13 +42,23 @@ class Matrix:
             if self.rows == 1:
                 return self.elements[0][0]
 
-            else:
+            elif isinstance(self.elements[0][0], (int, float)):
                 size = self.columns
                 result = 0
                 for index in range(size):
                     submatrix = self.minor(0, index)
                     det = submatrix.determinant()
-                    result += (-1)**index * det * self.elements[0][index]
+                    result += (-1) ** index * det * self.elements[0][index]
+
+                return result
+
+            else:
+                size = self.columns
+                result = Vector([0, 0, 0])
+                for index in range(size):
+                    submatrix = self.minor(0, index)
+                    det = submatrix.determinant()
+                    result += (-1) ** index * det * self.elements[0][index]
 
                 return result
 
@@ -206,34 +216,33 @@ class Matrix:
 
 
 class Vector(Matrix):
-    def __init__(self, vector: "[list[float], [list[list[float]]], Matrix]"):
+    def __init__(self, vector):
         if not isinstance(vector, list) and not isinstance(vector, Matrix):
             raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
         if isinstance(vector, Matrix):
             if 1 not in (vector.rows, vector.columns):
-                raise VectorExceptions(VectorExceptions.WRONG_SIZE)
+                raise VectorExceptions(VectorExceptions.WRONG_SIZES)
 
             self.dimension = [item for item in (vector.rows, vector.columns) if item != 1]
-            self.vector = vector
+            vector = vector.elements
 
         if isinstance(vector, list) and isinstance(vector[0], list):
             for i in range(len(vector) - 1):
                 if len(vector[i]) != len(vector[i + 1]):
                     raise VectorExceptions(VectorExceptions.WRONG_INIT)
 
-        elif isinstance(vector[0], list):
+        if isinstance(vector[0], list):
             if len(vector[0]) == 1:
-                # [[1], [2], [3]]
                 self.vector = vector
                 self.is_transpose = True
-                self.dimension = len(vector[0])
-            else:  # [[1, 2, 3]]
+                self.dimension = len(vector)
+            else:
                 self.vector = vector[0]
                 self.is_transpose = False
                 self.dimension = len(vector[0])
 
-        elif isinstance(vector[0], (int, float)):  # [1, 2, 3]
+        if isinstance(vector[0], (int, float)):
             self.vector = vector
             self.is_transpose = False
             self.dimension = len(vector)
@@ -261,16 +270,15 @@ class Vector(Matrix):
                 raise VectorExceptions(VectorExceptions.WRONG_VECTOR_PRODUCT)
 
             else:
-                return Vector([self.vector[1] * other.vector[2] - self.vector[2] * other.vector[1],
-                               self.vector[2] * other.vector[0] - self.vector[0] * other.vector[2],
-                               self.vector[0] * other.vector[1] - self.vector[1] * other.vector[0]])
+                basis = [Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])]
+                m = Matrix([[basis[0], basis[1], basis[2]], self.vector, other.vector])
+                return m.determinant()
 
     def length(self) -> "float":
         return math.sqrt(self % self)
 
     def transpose(self) -> "Vector":
-        self.vector = Vector(self.as_matrix().transpose())
-        self.is_transpose = not self.is_transpose
+        self = Vector(self.as_matrix().transpose().elements)
         return self
 
     def rotate(self, i: "int", j: "int", angle: "float"):
@@ -355,7 +363,7 @@ class Vector(Matrix):
     minor = attribute_error
     inverse = attribute_error
     identity = attribute_error
-    gram_matrix = attribute_error
+    gram = attribute_error
     __invert__ = attribute_error
 
 
@@ -415,7 +423,7 @@ class VectorSpace:
         if not vector_2.is_transpose:
             vector_2 = vector_2.transpose()
 
-        return (vector_1.as_matrix * self.basis.gram_matrix() * vector_2.as_matrix)[0][0]
+        return (vector_1.as_matrix() * self.basis.gram() * vector_2.as_matrix())[0][0]
 
     def as_vector(self, point: "Point") -> "Vector":
         if not point.dimension == self.height:
@@ -430,11 +438,32 @@ class VectorSpace:
                 answer.append(Matrix.determinant(tmp) / det)
             return Vector(answer)
 
+    def vector_product(self, vector_1: "Vector", vector_2: "Vector") -> "Vector":
+        if not isinstance(vector_2, Vector):
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
+
+        else:
+            if not (vector_1.dimension == 3 and vector_2.dimension == 3):
+                raise VectorExceptions(VectorExceptions.WRONG_VECTOR_PRODUCT)
+
+            else:
+                basis = [Vector(self.basis[0]), Vector(self.basis[1]), Vector(self.basis[2])]
+
+                i = basis[1].vector_product(basis[2])
+                j = basis[2].vector_product(basis[0])
+                k = basis[0].vector_product(basis[1])
+
+                m = Matrix([[i, j, k], vector_1.vector, vector_2.vector])
+                return m.determinant()
+
     def __repr__(self):
         return f'{self.basis}'
 
 
 class CoordinateSystem:
     def __init__(self, point: "Point", vector_space: "VectorSpace"):
-        self.point = point
-        self.vector_space = vector_space
+        if not (isinstance(point, Point) and isinstance(vector_space, VectorSpace)):
+            raise Exceptions(Exceptions.WRONG_TYPES)
+        else:
+            self.point = point
+            self.vector_space = vector_space
