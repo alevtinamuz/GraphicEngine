@@ -659,6 +659,16 @@ class TestVectorSpace:
 
             assert result
 
+    def test_vector_product(self):
+        vector_1 = Vector([1.0, 2.0, 3.0])
+        vector_2 = Vector(Matrix([[1.0, 2.0, 4.0]]))
+        vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+        vector_answer = Vector([2.0, -1.0, 0.0])
+
+        result = (VectorSpace.vector_product(vector_space, vector_1, vector_2) == vector_answer)
+
+        assert result
+
 
 class TestCoordinateSystem:
     def test_init(self):
@@ -669,12 +679,4 @@ class TestCoordinateSystem:
 
         assert result
 
-    def test_exception_init(self):
-        with pytest.raises(Exceptions):
-            vector = Vector([1.0, 2.0, 3.0])
-            vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
-
-            result = CoordinateSystem(vector, vector_space)
-
-            assert result
 

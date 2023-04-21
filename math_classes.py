@@ -271,8 +271,8 @@ class Vector(Matrix):
 
             else:
                 basis = [Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])]
-                m = Matrix([[basis[0], basis[1], basis[2]], self.vector, other.vector])
-                return m.determinant()
+                matrix = Matrix([[basis[0], basis[1], basis[2]], self.vector, other.vector])
+                return matrix.determinant()
 
     def length(self) -> "float":
         return math.sqrt(self % self)
@@ -448,13 +448,13 @@ class VectorSpace:
 
             else:
                 basis = [Vector(self.basis[0]), Vector(self.basis[1]), Vector(self.basis[2])]
-
                 i = basis[1].vector_product(basis[2])
                 j = basis[2].vector_product(basis[0])
                 k = basis[0].vector_product(basis[1])
 
-                m = Matrix([[i, j, k], vector_1.vector, vector_2.vector])
-                return m.determinant()
+                matrix = Matrix([[i, j, k], vector_1.vector, vector_2.vector])
+
+                return matrix.determinant()
 
     def __repr__(self):
         return f'{self.basis}'
