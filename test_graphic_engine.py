@@ -2,6 +2,7 @@ import pytest
 from math_classes import *
 from exceptions import Exceptions
 
+
 class TestMatrix:
     def test_init(self):
         matrix = Matrix([[2.0, 3.0],
@@ -551,11 +552,36 @@ class TestVector:
             assert result
 
     def test_exception_multiply_wrong_sizes(self):
-        with pytest.raises(VectorExceptions):
+        with pytest.raises(MatrixExceptions):
             vector_1 = Vector([0.0, 0.0, 0.0])
             vector_2 = Vector(Matrix([[1.8, 2.1]]))
 
-            result = (vector_2 - vector_1)
+            result = (vector_2 * vector_1)
+
+            assert result
+
+    def test_division_vector_by_scalar(self):
+        vector_1 = Vector([2.0, 4.0, 8.0])
+        vector_2 = Vector([1.0, 2.0, 4.0])
+
+        result = (vector_1 / 2 == vector_2)
+
+        assert result
+
+    def test_exception_division_wrong_types(self):
+        with pytest.raises(VectorExceptions):
+            vector_1 = Vector([0.0, 0.0, 0.0])
+            vector_2 = Vector(1.0)
+
+            result = (vector_2 / vector_1)
+
+            assert result
+
+    def test_exception_division_zero(self):
+        with pytest.raises(VectorExceptions):
+            vector_1 = Vector([1.0, 2.0, 3.0])
+
+            result = (vector_1 / 0)
 
             assert result
 
@@ -678,5 +704,4 @@ class TestCoordinateSystem:
         result = isinstance(CoordinateSystem(point, vector_space), CoordinateSystem)
 
         assert result
-
 

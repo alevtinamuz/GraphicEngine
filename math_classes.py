@@ -1,4 +1,5 @@
 import math
+from typing import Union, List
 from exceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions, VectorSpaceExceptions
 
 
@@ -8,7 +9,7 @@ def attribute_error(self):
 
 
 class Matrix:
-    def __init__(self, elements: "list[list[float]], Vector"):
+    def __init__(self, elements: Union[List[List[float]], 'Vector']):
         if isinstance(elements, Vector):
             if elements.is_transpose:
                 self.elements = elements.vector
@@ -27,40 +28,37 @@ class Matrix:
                 if len(self.elements[i]) != len(self.elements[i + 1]):
                     raise MatrixExceptions(MatrixExceptions.WRONG_INIT)
 
-    def is_square(self) -> "bool":
+    def is_square(self) -> bool:
         return self.rows == self.columns
 
-    def size(self) -> "int":
+    def size(self) -> int:
         return self.rows, self.columns
 
-    def determinant(self) -> "float":
+    def determinant(self) -> float:
         if not self.is_square():
             raise MatrixExceptions(MatrixExceptions.NOT_A_SQUARE)
 
-        else:
+        if self.rows == 1:
+            return self.elements[0][0]
 
-            if self.rows == 1:
-                return self.elements[0][0]
+        elif isinstance(self.elements[0][0], (int, float)):
+            size = self.columns
+            result = 0
+            for index in range(size):
+                submatrix = self.minor(0, index)
+                det = submatrix.determinant()
+                result += (-1) ** index * det * self.elements[0][index]
 
-            elif isinstance(self.elements[0][0], (int, float)):
-                size = self.columns
-                result = 0
-                for index in range(size):
-                    submatrix = self.minor(0, index)
-                    det = submatrix.determinant()
-                    result += (-1) ** index * det * self.elements[0][index]
+            return result
 
-                return result
+        size = self.columns
+        result = Vector([0, 0, 0])
+        for index in range(size):
+            submatrix = self.minor(0, index)
+            det = submatrix.determinant()
+            result += (-1) ** index * det * self.elements[0][index]
 
-            else:
-                size = self.columns
-                result = Vector([0, 0, 0])
-                for index in range(size):
-                    submatrix = self.minor(0, index)
-                    det = submatrix.determinant()
-                    result += (-1) ** index * det * self.elements[0][index]
-
-                return result
+        return result
 
     def copy(self):
         tmp = []
@@ -72,7 +70,7 @@ class Matrix:
 
         return Matrix(tmp)
 
-    def minor(self, i: "int", j: "int") -> "Matrix":
+    def minor(self, i: int, j: int) -> 'Matrix':
         tmp = self.copy().elements
         tmp.pop(i)
         for row in range(len(tmp)):
@@ -80,52 +78,47 @@ class Matrix:
 
         return Matrix(tmp)
 
-    def inverse(self) -> "Matrix":
+    def inverse(self) -> 'Matrix':
         if not self.is_square():
             raise MatrixExceptions(MatrixExceptions.NOT_A_SQUARE)
 
-        else:
-            det = self.determinant()
+        det = self.determinant()
 
-            if det == 0:
-                raise MatrixExceptions(MatrixExceptions.WRONG_DETERMINANT)
+        if det == 0:
+            raise MatrixExceptions(MatrixExceptions.WRONG_DETERMINANT)
 
-            else:
-                if self.rows == 2:
-                    return Matrix([[self.elements[1][1] / det, -1 * self.elements[0][1] / det],
-                                   [-1 * self.elements[1][0] / det, self.elements[0][0] / det]])
+        cofactors = []
+        for rows in range(self.rows):
+            cofactor_row = []
+            for columns in range(self.rows):
+                minor = self.minor(rows, columns).determinant()
+                cofactor_row.append(((-1) ** (rows + columns)) * minor)
+            cofactors.append(cofactor_row)
+        cofactors = Matrix(cofactors).transpose().elements
+        for rows in range(len(cofactors)):
+            for columns in range(len(cofactors)):
+                cofactors[rows][columns] = cofactors[rows][columns] / det
 
-                cofactors = []
-                for rows in range(self.rows):
-                    cofactor_row = []
-                    for columns in range(self.rows):
-                        minor = self.minor(rows, columns).determinant()
-                        cofactor_row.append(((-1) ** (rows + columns)) * minor)
-                    cofactors.append(cofactor_row)
-                cofactors = Matrix(cofactors).transpose().elements
-                for rows in range(len(cofactors)):
-                    for columns in range(len(cofactors)):
-                        cofactors[rows][columns] = cofactors[rows][columns] / det
+        return Matrix(cofactors)
 
-                return Matrix(cofactors)
-
-    def transpose(self) -> "Matrix":
+    def transpose(self) -> 'Matrix':
         return Matrix([[self.elements[j][i]
                         for j in range(self.rows)]
                        for i in range(self.columns)])
 
-    def identity(self) -> "Matrix":
-        return Matrix([[1 if i == j else 0 for i in range(self)] for j in range(self)])
+    @staticmethod
+    def identity(size) -> 'Matrix':
+        return Matrix([[1 if i == j else 0 for i in range(size)] for j in range(size)])
 
-    def product(self: "list[float]", other: "list[float]") -> "float":
+    def product(self: List[float], other: List[float]) -> float:
         return sum([self[i] * other[i] for i in range(len(self))])
 
-    def gram(self) -> "Matrix":
+    def gram(self) -> 'Matrix':
         return Matrix([[Matrix.product(self.elements[i], self.elements[j])
                         for i in range(self.rows)]
                        for j in range(self.rows)])
 
-    def rotate(self, i: "int", j: "int", angle: "float") -> "Matrix":
+    def rotate(self, i: int, j: int, angle: float) -> 'Matrix':
         angle = angle * math.pi / 180
         rotation_matrix = Matrix.identity(self.columns)
 
@@ -139,7 +132,7 @@ class Matrix:
 
         return self
 
-    def __eq__(self, other: "Matrix") -> "bool":
+    def equal(self, other: 'Matrix') -> bool:
         if not self.rows == other.rows and not self.columns == other.columns:
             raise MatrixExceptions(MatrixExceptions.NOT_EQUIVALENT)
 
@@ -147,33 +140,18 @@ class Matrix:
                    for i in range(self.rows)
                    for j in range(self.columns))
 
-    def __add__(self, other: "Matrix") -> "Matrix":
+    def additional(self, other: 'Matrix') -> 'Matrix':
         if not isinstance(other, Matrix):
             raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
-        else:
-            if not self.size() == other.size():
-                raise MatrixExceptions(MatrixExceptions.WRONG_SIZES)
+        if not self.size() == other.size():
+            raise MatrixExceptions(MatrixExceptions.WRONG_SIZES)
 
-            else:
-                return Matrix([[self.elements[i][j] + other.elements[i][j]
-                                for j in range(self.columns)]
-                               for i in range(self.rows)])
+        return Matrix([[self.elements[i][j] + other.elements[i][j]
+                        for j in range(self.columns)]
+                       for i in range(self.rows)])
 
-    def __sub__(self, other: "Matrix") -> "Matrix":
-        if not isinstance(other, Matrix):
-            raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
-
-        else:
-            if not self.size() == other.size():
-                raise MatrixExceptions(MatrixExceptions.WRONG_SIZES)
-
-            else:
-                return Matrix([[self.elements[i][j] - other.elements[i][j]
-                                for j in range(self.columns)]
-                               for i in range(self.rows)])
-
-    def __mul__(self, other: "[float, Matrix]") -> "Matrix":
+    def multiply(self, other: Union[float, 'Matrix']) -> 'Matrix':
         if isinstance(other, (int, float)):
             return Matrix([[self.elements[i][j] * other
                             for j in range(self.columns)]
@@ -183,32 +161,42 @@ class Matrix:
             if not self.columns == other.rows:
                 raise MatrixExceptions(MatrixExceptions.WRONG_SIZES_FOR_MULTIPLY)
 
-            else:
-                return Matrix([[Matrix.product(self.elements[i], other.transpose().elements[j])
-                                for j in range(other.columns)]
-                               for i in range(self.rows)])
-        else:
-            raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
+            return Matrix([[Matrix.product(self.elements[i], other.transpose().elements[j])
+                            for j in range(other.columns)]
+                           for i in range(self.rows)])
 
-    __rmul__ = __mul__
+        raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
-    def __truediv__(self, other: "float") -> "Matrix":
+    def division(self, other: float) -> 'Matrix':
         if not isinstance(other, (int, float)):
             raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
-        else:
-            if other == 0:
-                raise MatrixExceptions(MatrixExceptions.ZERO_DIVISION)
+        if other == 0:
+            raise MatrixExceptions(MatrixExceptions.ZERO_DIVISION)
 
-            else:
-                return Matrix([[self.elements[i][j] * (1 / other)
-                                for j in range(self.columns)]
-                               for i in range(self.rows)])
+        return self * (1 / other)
 
-    def __invert__(self) -> "Matrix":
+    def __eq__(self, other: 'Matrix') -> bool:
+        return Matrix.equal(self, other)
+
+    def __add__(self, other: 'Matrix') -> 'Matrix':
+        return Matrix.additional(self, other)
+
+    def __mul__(self, other: Union[float, 'Matrix']) -> 'Matrix':
+        return Matrix.multiply(self, other)
+
+    __rmul__ = __mul__
+
+    def __sub__(self, other: 'Matrix') -> 'Matrix':
+        return self + ((-1) * other)
+
+    def __truediv__(self, other: float) -> 'Matrix':
+        return Matrix.division(self, other)
+
+    def __invert__(self) -> 'Matrix':
         return Matrix.inverse(self)
 
-    def __getitem__(self, index: "float"):
+    def __getitem__(self, index: int):
         return self.elements[index]
 
     def __repr__(self):
@@ -250,108 +238,113 @@ class Vector(Matrix):
     def as_matrix(self):
         return Matrix(self)
 
-    def scalar_product(self, other: "Vector") -> "float":
+    def scalar_product(self, other: 'Vector') -> float:
         if not isinstance(other, Vector):
             raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
-        else:
-            if not self.dimension == other.dimension:
-                raise VectorExceptions(VectorExceptions.WRONG_SIZES)
+        if not self.dimension == other.dimension:
+            raise VectorExceptions(VectorExceptions.WRONG_SIZES)
 
-            else:
-                return BilinearForm(Matrix.identity(self.dimension), self, other)
+        return bilinear_form(Matrix.identity(self.dimension), self, other)
 
-    def vector_product(self, other: "Vector") -> "Vector":
+    def vector_product(self, other: 'Vector') -> 'Vector':
         if not isinstance(other, Vector):
             raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
-        else:
-            if not (self.dimension == 3 and other.dimension == 3):
-                raise VectorExceptions(VectorExceptions.WRONG_VECTOR_PRODUCT)
+        if not (self.dimension == 3 and other.dimension == 3):
+            raise VectorExceptions(VectorExceptions.WRONG_VECTOR_PRODUCT)
 
-            else:
-                basis = [Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])]
-                matrix = Matrix([[basis[0], basis[1], basis[2]], self.vector, other.vector])
-                return matrix.determinant()
+        basis = [Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])]
+        matrix = Matrix([[basis[0], basis[1], basis[2]], self.vector, other.vector])
+        return matrix.determinant()
 
-    def length(self) -> "float":
+    def length(self) -> float:
         return math.sqrt(self % self)
 
-    def transpose(self) -> "Vector":
-        self = Vector(self.as_matrix().transpose().elements)
-        return self
+    def transpose(self) -> 'Vector':
+        return Vector(self.as_matrix().transpose().elements)
 
-    def rotate(self, i: "int", j: "int", angle: "float"):
+    def rotate(self, i: int, j: int, angle: float):
         if not self.is_transpose:
             self.vector = self.as_matrix().rotate(i, j, angle).elements[0]
-
         else:
             self.vector = self.transpose().as_matrix().rotate(i, j, angle).transpose().elements
         return self
 
-    def __eq__(self, other: "Vector") -> "bool":
-        return self.as_matrix() == other.as_matrix()
-
-    def __mul__(self, other: "float") -> "Vector":
+    def multiply(self, other: Union[float, 'Vector']) -> 'Vector':
         if isinstance(other, (int, float)):
             return Vector(self.as_matrix() * other)
 
         elif isinstance(other, Vector):
             return Vector(self.as_matrix() * other.as_matrix())
 
-        else:
-            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
+        raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
-    __rmul__ = __mul__
-
-    def __mod__(self, other: "Vector") -> "Vector":
+    def additional(self, other: 'Vector') -> 'Vector':
         if not isinstance(other, Vector):
             raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
-        else:
-            return Vector.scalar_product(self, other)
+        if not self.dimension == other.dimension:
+            raise VectorExceptions(VectorExceptions.WRONG_SIZES)
 
-    def __pow__(self, other: "Vector") -> "Vector":
+        if self.is_transpose:
+            self.transpose()
+
+        if other.is_transpose:
+            other.transpose()
+
+        return Vector(self.as_matrix() + other.as_matrix())
+
+    def subtraction(self, other: 'Vector') -> 'Vector':
+        if not isinstance(other, Vector):
+            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
+
+        if not self.dimension == other.dimension:
+            raise VectorExceptions(VectorExceptions.WRONG_SIZES)
+
+        if self.is_transpose:
+            self.transpose()
+
+        if other.is_transpose:
+            other.transpose()
+
+        return Vector(self.as_matrix() - other.as_matrix())
+
+    def division(self, other: float) -> 'Vector':
+        if other == 0:
+            raise VectorExceptions(VectorExceptions.ZERO_DIVISION)
+        if isinstance(other, (int, float)):
+            return Vector(self.as_matrix() / other)
+
+        raise VectorExceptions(VectorExceptions.WRONG_TYPES)
+
+    def __eq__(self, other: 'Vector') -> bool:
+        return self.as_matrix() == other.as_matrix()
+
+    def __mul__(self, other: float) -> 'Vector':
+        return Vector.multiply(self, other)
+
+    __rmul__ = __mul__
+
+    def __mod__(self, other: 'Vector') -> 'Vector':
+        return Vector.scalar_product(self, other)
+
+    def __pow__(self, other: 'Vector') -> 'Vector':
         return Vector.vector_product(self, other)
 
-    def __getitem__(self, index: "int") -> "float":
+    def __getitem__(self, index: int) -> float:
         if not self.is_transpose:
             return self.vector[index]
         return self.vector[index][0]
 
-    def __add__(self, other: "Vector") -> "Vector":
-        if not isinstance(other, Vector):
-            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
+    def __add__(self, other: 'Vector') -> 'Vector':
+        return Vector.additional(self, other)
 
-        else:
-            if not self.dimension == other.dimension:
-                raise VectorExceptions(VectorExceptions.WRONG_SIZES)
+    def __sub__(self, other: 'Vector') -> 'Vector':
+        return Vector.subtraction(self, other)
 
-            else:
-                if self.is_transpose:
-                    self.transpose()
-
-                if other.is_transpose:
-                    other.transpose()
-
-                return Vector(self.as_matrix() + other.as_matrix())
-
-    def __sub__(self, other: "Vector") -> "Vector":
-        if not isinstance(other, Vector):
-            raise VectorExceptions(VectorExceptions.WRONG_TYPES)
-
-        else:
-            if not self.dimension == other.dimension:
-                raise VectorExceptions(VectorExceptions.WRONG_SIZES)
-
-            else:
-                if self.is_transpose:
-                    self.transpose()
-
-                if other.is_transpose:
-                    other.transpose()
-
-                return Vector(self.as_matrix() - other.as_matrix())
+    def __truediv__(self, other: float) -> 'Vector':
+        return Vector.division(self, other)
 
     def __repr__(self):
         return f'{self.vector}'
@@ -364,46 +357,53 @@ class Vector(Matrix):
     inverse = attribute_error
     identity = attribute_error
     gram = attribute_error
+    equal = attribute_error
     __invert__ = attribute_error
 
 
-def BilinearForm(matrix, vector_1: "Vector", vector_2: "Vector") -> "float":
+def bilinear_form(matrix, vector_1: Vector, vector_2: Vector) -> float:
     if not (matrix.rows == matrix.columns
             and matrix.rows == vector_1.dimension
             and matrix.rows == vector_2.dimension):
         raise MatrixExceptions(MatrixExceptions.WRONG_SIZES)
 
-    else:
-        return sum([matrix[i][j] * vector_1[i] * vector_2[j]
-                    for i in range(matrix.rows)
-                    for j in range(matrix.rows)])
+    return sum([matrix[i][j] * vector_1[i] * vector_2[j]
+                for i in range(matrix.rows)
+                for j in range(matrix.rows)])
 
 
 class Point(Vector):
-    def __add__(self, other: "Vector") -> "Point":
+    def additional(self, other: Vector) -> 'Point':
         if not isinstance(other, Vector):
             raise PointExceptions(PointExceptions.WRONG_TYPES)
-        else:
-            if not self.dimension == other.dimension:
-                raise PointExceptions(PointExceptions.WRONG_SIZES)
-            else:
-                return Point([self[i] + other[i] for i in range(self.dimension)])
+
+        if not self.dimension == other.dimension:
+            raise PointExceptions(PointExceptions.WRONG_SIZES)
+
+        return Point([self[i] + other[i] for i in range(self.dimension)])
+
+    def subtraction(self, other: Vector) -> 'Point':
+        if not isinstance(other, Vector):
+            raise PointExceptions(PointExceptions.WRONG_TYPES)
+        if not self.dimension == other.dimension:
+            raise PointExceptions(PointExceptions.WRONG_SIZES)
+
+        return Point([self[i] - other[i] for i in range(self.dimension)])
+
+    def __add__(self, other: Vector) -> 'Point':
+        return Point.additional(self, other)
 
     __radd__ = __add__
 
-    def __sub__(self, other: "Vector") -> "Point":
-        if not isinstance(other, Vector):
-            raise PointExceptions(PointExceptions.WRONG_TYPES)
-        else:
-            if not self.dimension == other.dimension:
-                raise PointExceptions(PointExceptions.WRONG_SIZES)
-            else:
-                return Point([self[i] - other[i] for i in range(self.dimension)])
+    def __sub__(self, other: Vector) -> 'Point':
+        return Point.subtraction(self, other)
 
     scalar_product = attribute_error
     vector_product = attribute_error
     length = attribute_error
     transpose = attribute_error
+    multiply = attribute_error
+    division = attribute_error
     __mul__ = attribute_error
     __rmul__ = attribute_error
     __mod__ = attribute_error
@@ -412,11 +412,11 @@ class Point(Vector):
 
 
 class VectorSpace:
-    def __init__(self, basis: "list[Vector]"):
+    def __init__(self, basis: List[Vector]):
         self.basis = Matrix([item.vector for item in basis])
         self.height = len(basis)
 
-    def scalar_product(self, vector_1: "Vector", vector_2: "Vector") -> "Matrix":
+    def scalar_product(self, vector_1: Vector, vector_2: Vector) -> Matrix:
         if vector_1.is_transpose:
             vector_1 = vector_1.transpose()
 
@@ -425,45 +425,43 @@ class VectorSpace:
 
         return (vector_1.as_matrix() * self.basis.gram() * vector_2.as_matrix())[0][0]
 
-    def as_vector(self, point: "Point") -> "Vector":
+    def as_vector(self, point: Point) -> Vector:
         if not point.dimension == self.height:
             raise MatrixExceptions(MatrixExceptions.WRONG_SIZES)
-        else:
-            det = self.basis.determinant()
-            answer = []
-            for column in range(point.dimension):
-                tmp = self.basis.copy().transpose()
-                for row in range(point.dimension):
-                    tmp[row][column] = point[row]
-                answer.append(Matrix.determinant(tmp) / det)
-            return Vector(answer)
 
-    def vector_product(self, vector_1: "Vector", vector_2: "Vector") -> "Vector":
+        det = self.basis.determinant()
+        answer = []
+        for column in range(point.dimension):
+            tmp = self.basis.copy().transpose()
+            for row in range(point.dimension):
+                tmp[row][column] = point[row]
+            answer.append(Matrix.determinant(tmp) / det)
+        return Vector(answer)
+
+    def vector_product(self, vector_1: Vector, vector_2: Vector) -> Vector:
         if not isinstance(vector_2, Vector):
             raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
-        else:
-            if not (vector_1.dimension == 3 and vector_2.dimension == 3):
-                raise VectorExceptions(VectorExceptions.WRONG_VECTOR_PRODUCT)
+        if not (vector_1.dimension == 3 and vector_2.dimension == 3):
+            raise VectorExceptions(VectorExceptions.WRONG_VECTOR_PRODUCT)
 
-            else:
-                basis = [Vector(self.basis[0]), Vector(self.basis[1]), Vector(self.basis[2])]
-                i = basis[1].vector_product(basis[2])
-                j = basis[2].vector_product(basis[0])
-                k = basis[0].vector_product(basis[1])
+        basis = [Vector(self.basis[0]), Vector(self.basis[1]), Vector(self.basis[2])]
+        i = basis[1].vector_product(basis[2])
+        j = basis[2].vector_product(basis[0])
+        k = basis[0].vector_product(basis[1])
 
-                matrix = Matrix([[i, j, k], vector_1.vector, vector_2.vector])
+        matrix = Matrix([[i, j, k], vector_1.vector, vector_2.vector])
 
-                return matrix.determinant()
+        return matrix.determinant()
 
     def __repr__(self):
         return f'{self.basis}'
 
 
 class CoordinateSystem:
-    def __init__(self, point: "Point", vector_space: "VectorSpace"):
+    def __init__(self, point: Point, vector_space: VectorSpace):
         if not (isinstance(point, Point) and isinstance(vector_space, VectorSpace)):
             raise Exceptions(Exceptions.WRONG_TYPES)
-        else:
-            self.point = point
-            self.vector_space = vector_space
+
+        self.point = point
+        self.vector_space = vector_space
