@@ -1,6 +1,6 @@
 import pytest
-from math_classes import *
-from exceptions import Exceptions
+from lib.Math.LowLevelMath import *
+from lib.Exceptions.MathExceptions import Exceptions
 
 
 class TestMatrix:

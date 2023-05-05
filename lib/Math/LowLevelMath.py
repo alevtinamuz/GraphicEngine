@@ -1,6 +1,6 @@
 import math
 from typing import Union, List
-from exceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions, VectorSpaceExceptions
+from lib.Exceptions.MathExceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions
 
 
 @property
