@@ -110,5 +110,9 @@ class Game:
     def get_ray_class(self):
         pass
 
-#     что-то реализовать из других классов
+    class Object(Entity):
+        pass
+
+    class Camera(Object):
+        pass
 
