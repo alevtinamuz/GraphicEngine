@@ -1,5 +1,9 @@
+from collections.abc import Callable
 from lib.Math.LowLevelMath import *
+from lib.Exceptions.EngineExceptions import EngineExceptions
 import uuid
+
+PRECISION = 7
 
 
 class Ray:
@@ -15,7 +19,7 @@ class Identifier:
         self.identifiers = []
         self.identifiers.append(self.identifier)
         set(self.identifiers)
-        self.value = self.get_value(len(self.identifiers) - 1)
+        self.value = self.get_value(self.identifiers.index(self.identifier))
 
     @staticmethod
     def __generate__() -> Union[int, float, str]:
@@ -28,23 +32,28 @@ class Identifier:
 class Entity:
     def __init__(self, cs: CoordinateSystem):
         self.__dict__["properties"] = set()
+        self.set_property("cs", cs)
+        self.set_property("identifier", Identifier())
 
-    def get_property(self, prop: str, default=None):
+    def get_property(self, prop: str) -> Union[int, float, str]:
         if prop not in self.__dict__["properties"]:
-            return default
+            raise EngineExceptions(EngineExceptions.GET_PROPERTY_ERROR)
 
         return self.__dict__[prop]
 
-    def set_property(self, prop: str, value: any):
+    def set_property(self, prop: str, value: Union[int, float, str]) -> None:
         if prop == "properties":
-            raise Exception
+            raise EngineExceptions(EngineExceptions.SET_PROPERTY_ERROR)
 
         self.__dict__[prop] = value
         self.__dict__["properties"].add(prop)
 
-    def remove_property(self, prop):
+    def remove_property(self, prop: str) -> None:
         if prop == "properties":
-            raise Exception
+            raise EngineExceptions(EngineExceptions.REMOVE_PROPERTY_ERROR)
+
+        if prop not in self.__dict__["properties"]:
+            raise EngineExceptions(EngineExceptions.REMOVE_PROPERTY_ERROR)
 
         self.__delattr__(prop)
         self.__dict__["properties"].remove(prop)
@@ -63,9 +72,43 @@ class Entity:
 
 
 class EntitiesList:
-    pass
+    def __init__(self):
+        pass
+
+    def append(self, entity: Entity) -> None:
+        pass
+
+    def remove(self, entity: Entity) -> None:
+        pass
+
+    def get(self, identifier: Identifier) -> Entity:
+        pass
+
+    def exec(self, func: Callable[[int, float, str], Entity]) -> None:
+        pass
+
+    def __getitem__(self, item):
+        pass
 
 
 class Game:
-    pass
+    def __init__(self):
+        pass
+
+    def run(self):
+        pass
+
+    def update(self):
+        pass
+
+    def exit(self):
+        pass
+
+    def get_entity_class(self):
+        pass
+
+    def get_ray_class(self):
+        pass
+
+#     что-то реализовать из других классов
 

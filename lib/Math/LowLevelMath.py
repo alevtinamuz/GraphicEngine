@@ -1,6 +1,9 @@
 import math
 from typing import Union, List
+import lib.Engine.BasicClasses
 from lib.Exceptions.MathExceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions
+
+PRECISION = lib.Engine.BasicClasses.PRECISION
 
 
 @property
@@ -136,7 +139,7 @@ class Matrix:
         if not self.rows == other.rows and not self.columns == other.columns:
             raise MatrixExceptions(MatrixExceptions.NOT_EQUIVALENT)
 
-        return all(abs(self[i][j] - other[i][j]) < 10 ** (-7)
+        return all(abs(self[i][j] - other[i][j]) < 10 ** (-PRECISION)
                    for i in range(self.rows)
                    for j in range(self.columns))
 
