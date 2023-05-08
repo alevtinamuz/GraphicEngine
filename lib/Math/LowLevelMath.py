@@ -1,10 +1,9 @@
 import math
 from typing import Union, List
-from lib.Engine.BasicClasses import PRECISION
+
 from lib.Exceptions.MathExceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions
 
-PRECISION = PRECISION
-
+PRECISION = 7
 
 @property
 def attribute_error():
@@ -113,7 +112,7 @@ class Matrix:
     def identity(size) -> 'Matrix':
         return Matrix([[1 if i == j else 0 for i in range(size)] for j in range(size)])
 
-    def product(self: List[int, float], other: List[int, float]) -> float:
+    def product(self: Union[int, float], other: Union[int, float]) -> float:
         return sum([self[i] * other[i] for i in range(len(self))])
 
     def gram(self) -> 'Matrix':
@@ -134,6 +133,25 @@ class Matrix:
         self.elements = (self * rotation_matrix).elements
 
         return self
+
+    def rotate_three_dimensional(self, angle_x: Union[int, float], angle_y: Union[int, float], angle_z: Union[int, float]):
+        if self.columns == 3:
+            angles = [angle_x * math.pi / 180, angle_y * math.pi / 180, angle_z * math.pi / 180]
+            rotation_matrix_x = Matrix([[1, 0, 0],
+                                        [0, math.cos(angles[0]), -math.sin(angles[0])],
+                                        [0, math.sin(angles[0]), math.cos(angles[0])]])
+            rotation_matrix_y = Matrix([[math.cos(angles[1]), 0, -math.sin(angles[1])],
+                                        [0, 1, 0],
+                                        [math.sin(angles[1]), 0, math.cos(angles[1])]])
+            rotation_matrix_z = Matrix([[math.cos(angles[2]), -math.sin(angles[2]), 0],
+                                        [math.sin(angles[2]), math.cos(angles[2]), 0],
+                                        [0, 0, 1]])
+            self.elements = (self * rotation_matrix_x *
+                             rotation_matrix_y * rotation_matrix_z).elements
+            return self
+
+        else:
+            raise MatrixExceptions(MatrixExceptions.ROTATION_3D_ERROR)
 
     def equal(self, other: 'Matrix') -> bool:
         if not self.rows == other.rows and not self.columns == other.columns:
@@ -179,6 +197,9 @@ class Matrix:
 
         return self * (1 / other)
 
+    def get_vector_column(self, index):
+        return Vector(self.elements[index])
+
     def __eq__(self, other: 'Matrix') -> bool:
         return Matrix.equal(self, other)
 
@@ -200,7 +221,7 @@ class Matrix:
         return Matrix.inverse(self)
 
     def __getitem__(self, index: int):
-        return Vector(self.elements[index])
+        return self.elements[index]
 
     def __repr__(self):
         return f'{self.elements}'

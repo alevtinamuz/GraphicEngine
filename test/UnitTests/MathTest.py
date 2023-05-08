@@ -1,4 +1,5 @@
 import pytest
+
 from lib.Math.LowLevelMath import *
 from lib.Exceptions.MathExceptions import Exceptions
 
@@ -636,11 +637,11 @@ class TestPoint:
         assert result
 
     def test_exception_difference_wrong_types(self):
-        with pytest.raises(AttributeError):
+        with pytest.raises(PointExceptions):
             point = Point([1.0, 2.0, 4.0])
             matrix = Matrix([[2.0]])
 
-            assert (matrix - point)
+            assert (point - matrix)
 
     def test_exception_difference_wrong_sizes(self):
         with pytest.raises(VectorExceptions):

@@ -12,6 +12,7 @@ class MatrixExceptions(Exceptions):
     NOT_A_SQUARE = "This is not a square matrix."
     WRONG_DETERMINANT = "The determinant of the matrix is 0."
     NOT_EQUIVALENT = "The matrices are not equal."
+    ROTATION_3D_ERROR = "This method can rotate only in three-dimensional."
 
 
 class VectorExceptions(MatrixExceptions):

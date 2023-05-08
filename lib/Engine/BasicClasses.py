@@ -134,21 +134,32 @@ class Game:
             self.entity.set_property("direction", direction)
 
         def move(self, direction: Vector) -> None:
-            pass
+            self.entity["position"] = self.entity["position"] + direction
 
         def planar_rotate(self, i: int, j: int, angle: float) -> None:
-            pass
+            direction = Vector(self.entity["direction"])
+            self.set_direction(direction * Matrix(self).rotate(i, j, angle))
 
-        def rotate_3d(self, angles: List[int, float]) -> None:
-            pass
+        def rotate_3d(self, angle_x: Union[int, float], angle_y: Union[int, float], angle_z: Union[int, float]) -> None:
+            direction = Vector(self.entity["direction"])
+            self.set_direction(direction * Matrix(self).rotate_three_dimensional(angle_x, angle_y, angle_z))
 
         def set_position(self, position: Point) -> None:
-            pass
+            self.set_property("position", position)
 
         def set_direction(self, direction: Vector) -> None:
-            pass
+            self.set_property("direction", direction.normalize())
 
     class Camera(Object):
-        def __init__(self):
-            pass
+        def __init__(self, position: Point, direction: Union[int, float],
+                     fov: Union[int, float], v_fov: Union[int, float],
+                     look_at: Point, draw_distance: Union[int, float]):
+            self.entity.set_property("fov", fov * math.pi / 180)
+            self.entity.set_property("draw_distance", draw_distance)
+            if isinstance(v_fov, (int, float)):
+                self.entity.set_property("v_fov", v_fov)
+            if isinstance(look_at, Point):
+                self.entity.set_property("look_at", look_at)
+
+
 
