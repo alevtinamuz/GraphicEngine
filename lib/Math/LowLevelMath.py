@@ -7,7 +7,7 @@ PRECISION = PRECISION
 
 
 @property
-def attribute_error(self):
+def attribute_error():
     raise AttributeError
 
 
