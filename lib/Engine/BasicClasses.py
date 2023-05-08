@@ -1,7 +1,9 @@
 from collections.abc import Callable
+import uuid
+
 from lib.Math.LowLevelMath import *
 from lib.Exceptions.EngineExceptions import EngineExceptions
-import uuid
+
 
 PRECISION = 7
 
@@ -125,8 +127,28 @@ class Game:
         return Ray(CoordinateSystem[Point([0.0, 0.0, 0.0]), VectorSpace(Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0]))])
 
     class Object(Entity):
-        pass
+        def __init__(self, position: Point, direction: Vector):
+            direction = direction.normalize()
+            self.entity = Game.get_entity_class()
+            self.entity.set_property("position", position)
+            self.entity.set_property("direction", direction)
+
+        def move(self, direction: Vector) -> None:
+            pass
+
+        def planar_rotate(self, i: int, j: int, angle: float) -> None:
+            pass
+
+        def rotate_3d(self, angles: List[int, float]) -> None:
+            pass
+
+        def set_position(self, position: Point) -> None:
+            pass
+
+        def set_direction(self, direction: Vector) -> None:
+            pass
 
     class Camera(Object):
-        pass
+        def __init__(self):
+            pass
 

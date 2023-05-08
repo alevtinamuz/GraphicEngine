@@ -1,9 +1,9 @@
 import math
 from typing import Union, List
-import lib.Engine.BasicClasses
+from lib.Engine.BasicClasses import PRECISION
 from lib.Exceptions.MathExceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions
 
-PRECISION = lib.Engine.BasicClasses.PRECISION
+PRECISION = PRECISION
 
 
 @property
@@ -37,7 +37,7 @@ class Matrix:
     def size(self) -> int:
         return self.rows, self.columns
 
-    def determinant(self) -> float:
+    def determinant(self) -> Union[int, float]:
         if not self.is_square():
             raise MatrixExceptions(MatrixExceptions.NOT_A_SQUARE)
 
@@ -113,7 +113,7 @@ class Matrix:
     def identity(size) -> 'Matrix':
         return Matrix([[1 if i == j else 0 for i in range(size)] for j in range(size)])
 
-    def product(self: List[float], other: List[float]) -> float:
+    def product(self: List[int, float], other: List[int, float]) -> float:
         return sum([self[i] * other[i] for i in range(len(self))])
 
     def gram(self) -> 'Matrix':
@@ -121,7 +121,7 @@ class Matrix:
                         for i in range(self.rows)]
                        for j in range(self.rows)])
 
-    def rotate(self, i: int, j: int, angle: float) -> 'Matrix':
+    def rotate(self, i: int, j: int, angle: Union[int, float]) -> 'Matrix':
         angle = angle * math.pi / 180
         rotation_matrix = Matrix.identity(self.columns)
 
@@ -154,7 +154,7 @@ class Matrix:
                         for j in range(self.columns)]
                        for i in range(self.rows)])
 
-    def multiply(self, other: Union[float, 'Matrix']) -> 'Matrix':
+    def multiply(self, other: Union[int, float, 'Matrix']) -> 'Matrix':
         if isinstance(other, (int, float)):
             return Matrix([[self.elements[i][j] * other
                             for j in range(self.columns)]
@@ -170,7 +170,7 @@ class Matrix:
 
         raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
-    def division(self, other: float) -> 'Matrix':
+    def division(self, other: Union[int, float]) -> 'Matrix':
         if not isinstance(other, (int, float)):
             raise MatrixExceptions(MatrixExceptions.WRONG_TYPES)
 
@@ -185,7 +185,7 @@ class Matrix:
     def __add__(self, other: 'Matrix') -> 'Matrix':
         return Matrix.additional(self, other)
 
-    def __mul__(self, other: Union[float, 'Matrix']) -> 'Matrix':
+    def __mul__(self, other: Union[int, float, 'Matrix']) -> 'Matrix':
         return Matrix.multiply(self, other)
 
     __rmul__ = __mul__
@@ -193,14 +193,14 @@ class Matrix:
     def __sub__(self, other: 'Matrix') -> 'Matrix':
         return self + ((-1) * other)
 
-    def __truediv__(self, other: float) -> 'Matrix':
+    def __truediv__(self, other: Union[int, float]) -> 'Matrix':
         return Matrix.division(self, other)
 
     def __invert__(self) -> 'Matrix':
         return Matrix.inverse(self)
 
     def __getitem__(self, index: int):
-        return self.elements[index]
+        return Vector(self.elements[index])
 
     def __repr__(self):
         return f'{self.elements}'
@@ -261,20 +261,20 @@ class Vector(Matrix):
         matrix = Matrix([[basis[0], basis[1], basis[2]], self.vector, other.vector])
         return matrix.determinant()
 
-    def length(self) -> float:
+    def length(self) -> Union[int, float]:
         return math.sqrt(self % self)
 
     def transpose(self) -> 'Vector':
         return Vector(self.as_matrix().transpose().elements)
 
-    def rotate(self, i: int, j: int, angle: float):
+    def rotate(self, i: int, j: int, angle: Union[int, float]):
         if not self.is_transpose:
             self.vector = self.as_matrix().rotate(i, j, angle).elements[0]
         else:
             self.vector = self.transpose().as_matrix().rotate(i, j, angle).transpose().elements
         return self
 
-    def multiply(self, other: Union[float, 'Vector']) -> 'Vector':
+    def multiply(self, other: Union[int, float, 'Vector']) -> 'Vector':
         if isinstance(other, (int, float)):
             return Vector(self.as_matrix() * other)
 
@@ -313,7 +313,7 @@ class Vector(Matrix):
 
         return Vector(self.as_matrix() - other.as_matrix())
 
-    def division(self, other: float) -> 'Vector':
+    def division(self, other: Union[int, float]) -> 'Vector':
         if other == 0:
             raise VectorExceptions(VectorExceptions.ZERO_DIVISION)
         if isinstance(other, (int, float)):
@@ -321,10 +321,13 @@ class Vector(Matrix):
 
         raise VectorExceptions(VectorExceptions.WRONG_TYPES)
 
+    def normalize(self) -> 'Vector':
+        return self / self.length()
+
     def __eq__(self, other: 'Vector') -> bool:
         return self.as_matrix() == other.as_matrix()
 
-    def __mul__(self, other: float) -> 'Vector':
+    def __mul__(self, other: Union[int, float]) -> 'Vector':
         return Vector.multiply(self, other)
 
     __rmul__ = __mul__
@@ -335,7 +338,7 @@ class Vector(Matrix):
     def __pow__(self, other: 'Vector') -> 'Vector':
         return Vector.vector_product(self, other)
 
-    def __getitem__(self, index: int) -> float:
+    def __getitem__(self, index: int) -> Union[int, float]:
         if not self.is_transpose:
             return self.vector[index]
         return self.vector[index][0]
@@ -346,7 +349,7 @@ class Vector(Matrix):
     def __sub__(self, other: 'Vector') -> 'Vector':
         return Vector.subtraction(self, other)
 
-    def __truediv__(self, other: float) -> 'Vector':
+    def __truediv__(self, other: Union[int, float]) -> 'Vector':
         return Vector.division(self, other)
 
     def __repr__(self):
@@ -364,7 +367,7 @@ class Vector(Matrix):
     __invert__ = attribute_error
 
 
-def bilinear_form(matrix, vector_1: Vector, vector_2: Vector) -> float:
+def bilinear_form(matrix, vector_1: Vector, vector_2: Vector) -> Union[int, float]:
     if not (matrix.rows == matrix.columns
             and matrix.rows == vector_1.dimension
             and matrix.rows == vector_2.dimension):
