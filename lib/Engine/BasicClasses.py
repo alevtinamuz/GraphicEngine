@@ -15,8 +15,7 @@ class Ray:
 
 class Identifier:
     def __init__(self):
-        self.identifier = self.__generate__()
-        self.identifiers = []
+        self.identifier = Identifier.__generate__()
         self.identifiers.append(self.identifier)
         set(self.identifiers)
         self.value = self.get_value(self.identifiers.index(self.identifier))
@@ -25,7 +24,7 @@ class Identifier:
     def __generate__() -> Union[int, float, str]:
         return str(uuid.uuid4().get_hex().upper()[0:16])
 
-    def get_value(self, element) -> Union[int, float, str]:
+    def get_value(self, element: int) -> Union[int, float, str]:
         return self.identifiers[element]
 
 
@@ -33,7 +32,7 @@ class Entity:
     def __init__(self, cs: CoordinateSystem):
         self.__dict__["properties"] = set()
         self.set_property("cs", cs)
-        self.set_property("identifier", Identifier())
+        self.set_property("identifier", self.Identifier.identifier)
 
     def get_property(self, prop: str) -> Union[int, float, str]:
         if prop not in self.__dict__["properties"]:
@@ -72,43 +71,58 @@ class Entity:
 
 
 class EntitiesList:
-    def __init__(self):
-        pass
+    def __init__(self, entities: list):
+        self.entities = entities
 
     def append(self, entity: Entity) -> None:
-        pass
+        if len(self.entities) != 0:
+            raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
+        self.entities.append(entity)
 
     def remove(self, entity: Entity) -> None:
-        pass
+        if len(self.entities) != 0:
+            raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
+        self.entities.remove(entity)
 
     def get(self, identifier: Identifier) -> Entity:
-        pass
+        if len(self.entities) != 0:
+            raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
+        for entity in self.entities:
+            if identifier.get_value() == Identifier.get_value(entity):
+                return entity
+        raise EngineExceptions(EngineExceptions.ENTITY_NOT_EXIST)
 
     def exec(self, func: Callable[[int, float, str], Entity]) -> None:
-        pass
+        if len(self.entities) != 0:
+            raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
+        self.entities = list(map(lambda entity: func(entity), self.entities))
+        return self.entities
 
     def __getitem__(self, item):
-        pass
+        return self.get(item)
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, cs: CoordinateSystem, entities: EntitiesList):
+        self.cs = cs
+        self.entities = entities
+
+    def run(self) -> None:
         pass
 
-    def run(self):
+    def update(self) -> None:
         pass
 
-    def update(self):
+    def exit(self) -> None:
         pass
 
-    def exit(self):
-        pass
+    @staticmethod
+    def get_entity_class() -> Entity:
+        return Entity(CoordinateSystem[Point([0.0, 0.0, 0.0]), VectorSpace(Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0]))])
 
-    def get_entity_class(self):
-        pass
-
-    def get_ray_class(self):
-        pass
+    @staticmethod
+    def get_ray_class() -> Ray:
+        return Ray(CoordinateSystem[Point([0.0, 0.0, 0.0]), VectorSpace(Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0]))])
 
     class Object(Entity):
         pass
