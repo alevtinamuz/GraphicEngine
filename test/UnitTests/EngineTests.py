@@ -93,11 +93,13 @@ class TestEntitiesList:
 
         assert result
 
-    # def test_exec(self):
-    #     entity_1 = Entity(cs_global)
-    #     entity_2 = Entity(cs_global)
-    #     entities_list = EntitiesList([entity_1, entity_2])
-    #     res = entities_list.exec(Entity.set_property('test', 'testing'))
-    #
-    #     for i in entities_list:
-    #         res = i
+    def test_exec(self):
+        entity_1 = Entity(cs_global)
+        entity_2 = Entity(cs_global)
+        entities_list = EntitiesList([entity_1, entity_2])
+        res = exec(entities_list, Entity.set_property)
+
+        for i in entities_list:
+            res = i
+
+    # def test_

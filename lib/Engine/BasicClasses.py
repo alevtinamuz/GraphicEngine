@@ -95,10 +95,10 @@ class EntitiesList:
                 return entity
         raise EngineExceptions(EngineExceptions.ENTITY_NOT_EXIST)
 
-    def exec(self, func: Callable[[int, float, str], 'EntitiesList'], prop, value) -> None:
+    def exec(self, func: Callable[[int, float, str], 'EntitiesList']) -> None:
         if len(self.entities) == 0:
             raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
-        f = list(map(lambda x, y: func(x, y), self.entities))
+        f = list(map(lambda x: func(x), self.entities))
         return self.entities(f)
 
     def __getitem__(self, item):
