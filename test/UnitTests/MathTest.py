@@ -1,7 +1,6 @@
 import pytest
 
 from lib.Math.LowLevelMath import *
-from lib.Exceptions.MathExceptions import Exceptions
 
 
 class TestMatrix:
@@ -700,7 +699,7 @@ class TestVectorSpace:
 class TestCoordinateSystem:
     def test_init(self):
         point = Point([1.0, 2.0, 3.0])
-        vector_space = VectorSpace([Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])])
+        vector_space = VectorSpace([Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0])])
 
         result = isinstance(CoordinateSystem(point, vector_space), CoordinateSystem)
 

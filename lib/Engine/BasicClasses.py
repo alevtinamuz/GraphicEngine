@@ -3,9 +3,7 @@ import uuid
 
 from lib.Math.LowLevelMath import *
 from lib.Exceptions.EngineExceptions import EngineExceptions
-
-
-PRECISION = 7
+from lib.GlobalVariables import identifiers, cs_global
 
 
 class Ray:
@@ -16,25 +14,27 @@ class Ray:
 
 
 class Identifier:
+
     def __init__(self):
         self.identifier = Identifier.__generate__()
-        self.identifiers.append(self.identifier)
-        set(self.identifiers)
-        self.value = self.get_value(self.identifiers.index(self.identifier))
+        identifiers.append(self.identifier)
+        set(identifiers)
+        self.value = Identifier.get_value(identifiers.index(self.identifier))
 
     @staticmethod
     def __generate__() -> Union[int, float, str]:
-        return str(uuid.uuid4().get_hex().upper()[0:16])
+        return str(uuid.uuid4().hex.upper())
 
-    def get_value(self, element: int) -> Union[int, float, str]:
-        return self.identifiers[element]
+    @staticmethod
+    def get_value(element: int) -> Union[int, float, str]:
+        return identifiers[element]
 
 
 class Entity:
     def __init__(self, cs: CoordinateSystem):
         self.__dict__["properties"] = set()
         self.set_property("cs", cs)
-        self.set_property("identifier", self.Identifier.identifier)
+        self.set_property("identifier", Identifier().identifier)
 
     def get_property(self, prop: str) -> Union[int, float, str]:
         if prop not in self.__dict__["properties"]:
@@ -71,34 +71,35 @@ class Entity:
     def __setattr__(self, prop, value):
         self.set_property(prop, value)
 
+    def __delitem__(self, prop):
+        return self.remove_property(prop)
+
 
 class EntitiesList:
     def __init__(self, entities: list):
         self.entities = entities
 
     def append(self, entity: Entity) -> None:
-        if len(self.entities) != 0:
-            raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
         self.entities.append(entity)
 
     def remove(self, entity: Entity) -> None:
-        if len(self.entities) != 0:
+        if len(self.entities) == 0:
             raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
         self.entities.remove(entity)
 
     def get(self, identifier: Identifier) -> Entity:
-        if len(self.entities) != 0:
+        if len(self.entities) == 0:
             raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
         for entity in self.entities:
-            if identifier.get_value() == Identifier.get_value(entity):
+            if Identifier.get_value(identifiers.index(identifier)) == entity['identifier']:
                 return entity
         raise EngineExceptions(EngineExceptions.ENTITY_NOT_EXIST)
 
-    def exec(self, func: Callable[[int, float, str], Entity]) -> None:
-        if len(self.entities) != 0:
+    def exec(self, func: Callable[[int, float, str], 'EntitiesList'], prop, value) -> None:
+        if len(self.entities) == 0:
             raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
-        self.entities = list(map(lambda entity: func(entity), self.entities))
-        return self.entities
+        f = list(map(lambda x, y: func(x, y), self.entities))
+        return self.entities(f)
 
     def __getitem__(self, item):
         return self.get(item)
@@ -120,11 +121,11 @@ class Game:
 
     @staticmethod
     def get_entity_class() -> Entity:
-        return Entity(CoordinateSystem[Point([0.0, 0.0, 0.0]), VectorSpace(Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0]))])
+        return Entity(cs_global)
 
     @staticmethod
     def get_ray_class() -> Ray:
-        return Ray(CoordinateSystem[Point([0.0, 0.0, 0.0]), VectorSpace(Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0]))])
+        return Ray(cs_global)
 
     class Object(Entity):
         def __init__(self, position: Point, direction: Vector):
@@ -151,15 +152,11 @@ class Game:
             self.set_property("direction", direction.normalize())
 
     class Camera(Object):
-        def __init__(self, position: Point, direction: Union[int, float],
-                     fov: Union[int, float], v_fov: Union[int, float],
+        def __init__(self, fov: Union[int, float], v_fov: Union[int, float],
                      look_at: Point, draw_distance: Union[int, float]):
             self.entity.set_property("fov", fov * math.pi / 180)
             self.entity.set_property("draw_distance", draw_distance)
-            if isinstance(v_fov, (int, float)):
+            if v_fov is not None:
                 self.entity.set_property("v_fov", v_fov)
-            if isinstance(look_at, Point):
+            if look_at is not Point([None]):
                 self.entity.set_property("look_at", look_at)
-
-
-

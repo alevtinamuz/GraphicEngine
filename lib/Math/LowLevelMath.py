@@ -5,6 +5,7 @@ from lib.Exceptions.MathExceptions import Exceptions, MatrixExceptions, VectorEx
 
 PRECISION = 7
 
+
 @property
 def attribute_error():
     raise AttributeError
@@ -278,7 +279,7 @@ class Vector(Matrix):
         if not (self.dimension == 3 and other.dimension == 3):
             raise VectorExceptions(VectorExceptions.WRONG_VECTOR_PRODUCT)
 
-        basis = [Vector([1, 0, 0]), Vector([0, 1, 0]), Vector([0, 0, 1])]
+        basis = [Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0])]
         matrix = Matrix([[basis[0], basis[1], basis[2]], self.vector, other.vector])
         return matrix.determinant()
 
