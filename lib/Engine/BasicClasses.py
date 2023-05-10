@@ -3,11 +3,11 @@ import uuid
 
 from lib.Math.LowLevelMath import *
 from lib.Exceptions.EngineExceptions import EngineExceptions
-from lib.GlobalVariables import identifiers, cs_global
+from lib.GlobalVariables import cs_global, identifiers
 
 
 class Ray:
-    def __init__(self, cs: CoordinateSystem, initial_pt: Point, direction: Vector):
+    def __init__(self, cs: CoordinateSystem, initial_pt: Union[Point, None] = None, direction: Union[Vector, None] = None):
         self.cs = cs
         self.initial_pt = initial_pt
         self.direction = direction
@@ -95,11 +95,11 @@ class EntitiesList:
                 return entity
         raise EngineExceptions(EngineExceptions.ENTITY_NOT_EXIST)
 
-    def exec(self, func: Callable[[int, float, str], 'EntitiesList']) -> None:
+    def exec(self, func: Callable[[int, float, str], 'EntitiesList'], *prop, **value) -> None:
         if len(self.entities) == 0:
             raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
-        f = list(map(lambda x: func(x), self.entities))
-        return self.entities(f)
+        for entity in self.entities:
+            func(entity, *prop, **value)
 
     def __getitem__(self, item):
         return self.get(item)
@@ -131,8 +131,8 @@ class Game:
         def __init__(self, position: Point, direction: Vector):
             direction = direction.normalize()
             self.entity = Game.get_entity_class()
-            self.entity.set_property("position", position)
-            self.entity.set_property("direction", direction)
+            self.entity["position"] = position
+            self.entity["direction"] = direction
 
         def move(self, direction: Vector) -> None:
             self.entity["position"] = self.entity["position"] + direction
@@ -152,11 +152,11 @@ class Game:
             self.set_property("direction", direction.normalize())
 
     class Camera(Object):
-        def __init__(self, fov: Union[int, float], v_fov: Union[int, float],
-                     look_at: Point, draw_distance: Union[int, float]):
+        def __init__(self, fov: Union[int, float], draw_distance: Union[int, float],
+                     v_fov: Union[int, float, None] = None, look_at: Union[Point, None] = None):
             self.entity.set_property("fov", fov * math.pi / 180)
             self.entity.set_property("draw_distance", draw_distance)
             if v_fov is not None:
                 self.entity.set_property("v_fov", v_fov)
-            if look_at is not Point([None]):
+            if look_at is not None:
                 self.entity.set_property("look_at", look_at)

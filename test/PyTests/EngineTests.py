@@ -1,5 +1,6 @@
 import pytest
 from lib.Engine.BasicClasses import *
+from lib.GlobalVariables import cs_global
 
 
 class TestRay:
@@ -97,9 +98,44 @@ class TestEntitiesList:
         entity_1 = Entity(cs_global)
         entity_2 = Entity(cs_global)
         entities_list = EntitiesList([entity_1, entity_2])
-        res = exec(entities_list, Entity.set_property)
+        entities_list.exec(Entity.set_property, 'test', 'testing')
 
-        for i in entities_list:
-            res = i
+        result = (entity_2['test'] == 'testing')
 
-    # def test_
+        assert result
+
+
+class TestGame:
+    def test_init(self):
+        entity_1 = Entity(cs_global)
+        entity_2 = Entity(cs_global)
+        entities_list = EntitiesList([entity_1, entity_2])
+
+        result = isinstance(Game(cs_global, entities_list), Game)
+
+        assert result
+
+    def test_get_entity_class(self):
+        entity = Game.get_entity_class()
+
+        result = (entity['cs'] == cs_global)
+
+        assert result
+
+    def test_get_ray_class(self):
+        ray = Game.get_ray_class()
+
+        result = isinstance(ray, Ray)
+
+        assert result
+
+
+class TestObject:
+    def test_init(self):
+        obj = Game.Object(Point([1.0, 0.0, 0.0]), Vector([1.0, 0.0, 0.0]))
+
+        result = isinstance(obj, Game.Object)
+
+        assert result
+
+
