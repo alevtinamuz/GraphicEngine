@@ -119,7 +119,7 @@ class Game:
         self.ray = self.get_ray_class()
         self.object = self.get_object_class()
         self.camera = self.get_camera_class()
-        # self.hyper_plane = self.get_hyper_plane_class()
+        self.hyper_plane = self.get_hyper_plane_class()
 
     def run(self) -> None:
         pass
@@ -245,14 +245,14 @@ class Game:
 
         return Camera
 
-    # def get_hyper_plane_class(self):
-    #     class HyperPlane(self.object):
-    #         def __init__(pself, position: Point, normal: Vector):
-    #             super().__init__(position, normal.normalize())
-    #             pself.set_property("position", position)
-    #             pself.set_property("normal", normal.normalize())
-    #
-    #         def planar_rotate(pself, inds: List[int, int], angle: float) -> None:
-    #             normal = pself.normal.rotate(inds[0], inds[1], angle)
-    #
-    #     return HyperPlane
+    def get_hyper_plane_class(self):
+         class HyperPlane(self.object):
+             def __init__(pself, position: Point, normal: Vector):
+                 super().__init__(position, normal.normalize())
+                 pself.set_property("position", position)
+                 pself.set_property("normal", normal.normalize())
+
+             def planar_rotate(pself, i: int, j: int, angle: float) -> None:
+                 normal = pself.normal.rotate(i, j, angle)
+
+         return HyperPlane
