@@ -194,9 +194,11 @@ class Game:
                 if direction is not None:
                     self.set_property("direction", direction)
 
-            # def get_rays_matrix(pself, n: int, m: int):
-                # if pself.direction is not None:
-                    # alpha =
-                    # beta =
+            def get_rays_matrix(pself, n: int, m: int):
+                if pself.direction is not None:
+                    alpha = pself.fov
+                    beta = pself.v_fov
+                    delta_alpha = alpha / n
+                    delta_beta = beta / m
 
         return Camera
