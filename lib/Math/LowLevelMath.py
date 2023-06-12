@@ -347,6 +347,8 @@ class Vector(Matrix):
         return self / self.length()
 
     def __eq__(self, other: 'Vector') -> bool:
+        if other == None:
+            return False
         return self.as_matrix() == other.as_matrix()
 
     def __mul__(self, other: Union[int, float]) -> 'Vector':
