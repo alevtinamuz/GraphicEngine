@@ -128,6 +128,15 @@ class TestMatrix:
 
         assert result
 
+    def test_zero_matrix(self):
+        matrix = Matrix([[0, 0, 0],
+                        [0, 0, 0]])
+        print(matrix)
+        print(Matrix.zero_matrix(2, 3))
+        result = (matrix == Matrix.zero_matrix(2, 3))
+
+        assert result
+
     def test_product_of_lists(self):
         matrix = Matrix([[1.0, 1.0, 0.0],
                          [0.0, 2.0, 0.0],

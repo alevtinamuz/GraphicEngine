@@ -37,6 +37,10 @@ class Matrix:
     def size(self) -> int:
         return self.rows, self.columns
 
+    @staticmethod
+    def zero_matrix(rows: int, columns: int):
+        return Matrix([[0 for _ in range(columns)] for _ in range(rows)])
+
     def determinant(self) -> Union[int, float]:
         if not self.is_square():
             raise MatrixExceptions(MatrixExceptions.NOT_A_SQUARE)
@@ -155,7 +159,7 @@ class Matrix:
             raise MatrixExceptions(MatrixExceptions.ROTATION_3D_ERROR)
 
     def equal(self, other: 'Matrix') -> bool:
-        if not self.rows == other.rows and not self.columns == other.columns:
+        if not (self.rows == other.rows and self.columns == other.columns):
             raise MatrixExceptions(MatrixExceptions.NOT_EQUIVALENT)
 
         return all(abs(self[i][j] - other[i][j]) < 10 ** (-PRECISION)

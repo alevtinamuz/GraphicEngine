@@ -29,7 +29,6 @@ class Identifier:
     @staticmethod
     def __generate__() -> Union[int, float, str]:
         time.sleep(0.000001)
-        print(hex(int(time.time() * 10000000))[2:])
         return hex(int(time.time() * 10000000))[2:]
 
     @staticmethod
@@ -120,6 +119,7 @@ class Game:
         self.ray = self.get_ray_class()
         self.object = self.get_object_class()
         self.camera = self.get_camera_class()
+        # self.hyper_plane = self.get_hyper_plane_class()
 
     def run(self) -> None:
         pass
@@ -145,7 +145,7 @@ class Game:
         return GameRay
 
     def get_object_class(self):
-        class Object(self.get_entity_class()):
+        class Object(self.entity):
             def __init__(pself, position: Point, direction: Vector):
                 super().__init__()
                 pself.set_direction(direction)
@@ -178,7 +178,7 @@ class Game:
         return Object
 
     def get_camera_class(self):
-        class Camera(self.get_object_class()):
+        class Camera(self.object):
             def __init__(self, position: Point, fov: Union[int, float],
                          draw_distance: Union[int, float], v_fov: Union[int, float, None] = None,
                          direction: Union[Vector, None] = None, look_at: Union[Point, None] = None):
@@ -194,11 +194,65 @@ class Game:
                 if direction is not None:
                     self.set_property("direction", direction)
 
-            def get_rays_matrix(pself, n: int, m: int):
+            def get_rays_matrix(pself, n: int, m: int) -> Matrix:
                 if pself.direction is not None:
+                    ray_list = []
                     alpha = pself.fov
                     beta = pself.v_fov
                     delta_alpha = alpha / n
                     delta_beta = beta / m
+                    vector = pself.direction
+                    for i in range(0, n):
+                        alpha_i = delta_alpha * i - alpha / 2
+                        tmp_list = []
+                        for j in range(0, m):
+                            beta_i = delta_beta * j - beta / 2
+                            vector_res = vector.copy()
+                            vector_res.rotate(0, 1, alpha_i)
+                            vector_res.rotate(0, 2, beta_i)
+                            if (vector % vector_res) == 0:
+                                raise Exceptions(Exceptions.ZERO_DIVISION)
+                            vector_res = (vector_res * (vector.length() ** 2 / (vector % vector_res)))
+                            tmp_list.append(vector_res)
+                        ray_list.append(tmp_list)
+
+                    return Matrix(ray_list)
+
+                if pself.look_at is not None:
+                    ray_list = []
+                    alpha = pself.fov
+                    beta = pself.v_fov
+                    delta_alpha = alpha / n
+                    delta_beta = beta / m
+                    look_at_vector = Vector([i for i in self.look_at.values])
+                    position_vector = Vector([i for i in self.position.values])
+                    vector = (look_at_vector - position_vector).normalize()
+                    for i in range(0, n):
+                        alpha_i = delta_alpha * i - alpha / 2
+                        tmp_list = []
+                        for j in range(0, m):
+                            beta_i = delta_beta * j - beta / 2
+                            vector_res = vector.copy()
+                            vector_res.rotate(0, 1, alpha_i)
+                            vector_res.rotate(0, 2, beta_i)
+                            if (vector % vector_res) == 0:
+                                raise Exceptions(Exceptions.ZERO_DIVISION)
+                            vector_res = (vector_res * (vector.length() ** 2 / (vector % vector_res)))
+                            tmp_list.append(vector_res)
+                        ray_list.append(tmp_list)
+
+                    return Matrix(ray_list)
 
         return Camera
+
+    # def get_hyper_plane_class(self):
+    #     class HyperPlane(self.object):
+    #         def __init__(pself, position: Point, normal: Vector):
+    #             super().__init__(position, normal.normalize())
+    #             pself.set_property("position", position)
+    #             pself.set_property("normal", normal.normalize())
+    #
+    #         def planar_rotate(pself, inds: List[int, int], angle: float) -> None:
+    #             normal = pself.normal.rotate(inds[0], inds[1], angle)
+    #
+    #     return HyperPlane
