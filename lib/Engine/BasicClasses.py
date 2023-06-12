@@ -130,10 +130,10 @@ class Game:
     def exit(self) -> None:
         pass
 
-    def get_entity_class(self) -> "Class":
+    def get_entity_class(self):
         class GameEntity(Entity):
             def __init__(pself):
-                super().__init__(pself, self.cs)
+                super().__init__(self.cs)
 
         return GameEntity
 
@@ -147,6 +147,7 @@ class Game:
     def get_object_class(self):
         class Object(self.get_entity_class()):
             def __init__(pself, position: Point, direction: Vector):
+                super().__init__()
                 pself.set_direction(direction)
                 pself.set_position(position)
 
@@ -166,7 +167,9 @@ class Game:
                 pself.set_property("position", position)
 
             def set_direction(pself, direction: Vector) -> None:
-                pself.set_property("direction", direction.normalize())
+                if direction != None:
+                    direction = direction.normalize()
+                pself.set_property("direction", direction)
 
             @classmethod
             def intersection_distance(pself, ray: Ray):
@@ -180,22 +183,21 @@ class Game:
                          draw_distance: Union[int, float], v_fov: Union[int, float, None] = None,
                          direction: Union[Vector, None] = None, look_at: Union[Point, None] = None):
                 super().__init__(position, direction)
-                self.entity.set_property("fov", fov * math.pi / 180)
-                self.entity.set_property("draw_distance", draw_distance)
-                self.entity.set_property("v_fov", math.atan(16 / 9 * math.tan(fov / 2)))
+                self.set_property("fov", fov * math.pi / 180)
+                self.set_property("draw_distance", draw_distance)
+                self.set_property("v_fov", math.atan(16 / 9 * math.tan(fov / 2)))
 
                 if v_fov is not None:
-                    self.entity.set_property("v_fov", v_fov)
+                    self.set_property("v_fov", v_fov)
                 if look_at is not None:
-                    self.entity.set_property("look_at", look_at)
+                    self.set_property("look_at", look_at)
                 if direction is not None:
-                    self.entity.set_property("direction", direction)
+                    self.set_property("direction", direction)
 
-            # def get_rays_matrix(pself, n: int, m: int) -> Union[Matrix[List[Ray]]]:
-            #     data = Camera(Point[1, 2, 3], 112, 121, None, 7777, None)
-            #     print(data.direction)
-            #     # if pself.direction is not None:
-            #         # alpha =
-            #         # beta =
+            def get_rays_matrix(pself, n: int, m: int):
+                print(pself.direction)
+                # if pself.direction is not None:
+                    # alpha =
+                    # beta =
 
         return Camera
