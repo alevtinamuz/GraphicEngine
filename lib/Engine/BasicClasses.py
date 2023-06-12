@@ -1,16 +1,21 @@
 from collections.abc import Callable
-import uuid
+import time
 
 from lib.Math.LowLevelMath import *
 from lib.Exceptions.EngineExceptions import EngineExceptions
-from lib.GlobalVariables import cs_global, identifiers
+from lib.GlobalVariables import identifiers
 
 
 class Ray:
-    def __init__(self, cs: CoordinateSystem, initial_pt: Union[Point, None] = None, direction: Union[Vector, None] = None):
+    def __init__(self, cs: CoordinateSystem, initial_pt: Union[Point, None] = None,
+                 direction: Union[Vector, None] = None
+                 ):
         self.cs = cs
         self.initial_pt = initial_pt
         self.direction = direction
+
+    def normalize(self) -> Vector:
+        return self.direction.normalize()
 
 
 class Identifier:
@@ -23,7 +28,9 @@ class Identifier:
 
     @staticmethod
     def __generate__() -> Union[int, float, str]:
-        return str(uuid.uuid4().hex.upper())
+        time.sleep(0.000001)
+        print(hex(int(time.time() * 10000000))[2:])
+        return hex(int(time.time() * 10000000))[2:]
 
     @staticmethod
     def get_value(element: int) -> Union[int, float, str]:
@@ -109,6 +116,10 @@ class Game:
     def __init__(self, cs: CoordinateSystem, entities: EntitiesList):
         self.cs = cs
         self.entities = entities
+        self.entity = self.get_entity_class()
+        self.ray = self.get_ray_class()
+        self.object = self.get_object_class()
+        self.camera = self.get_camera_class()
 
     def run(self) -> None:
         pass
@@ -119,44 +130,72 @@ class Game:
     def exit(self) -> None:
         pass
 
-    @staticmethod
-    def get_entity_class() -> Entity:
-        return Entity(cs_global)
+    def get_entity_class(self) -> "Class":
+        class GameEntity(Entity):
+            def __init__(pself):
+                super().__init__(pself, self.cs)
 
-    @staticmethod
-    def get_ray_class() -> Ray:
-        return Ray(cs_global)
+        return GameEntity
 
-    class Object(Entity):
-        def __init__(self, position: Point, direction: Vector):
-            direction = direction.normalize()
-            self.entity = Game.get_entity_class()
-            self.entity["position"] = position
-            self.entity["direction"] = direction
+    def get_ray_class(self):
+        class GameRay(Ray):
+            def __init__(pself):
+                super().__init__(self.cs)
 
-        def move(self, direction: Vector) -> None:
-            self.entity["position"] = self.entity["position"] + direction
+        return GameRay
 
-        def planar_rotate(self, i: int, j: int, angle: float) -> None:
-            direction = Vector(self.entity["direction"])
-            self.set_direction(direction * Matrix(self).rotate(i, j, angle))
+    def get_object_class(self):
+        class Object(self.get_entity_class()):
+            def __init__(pself, position: Point, direction: Vector):
+                pself.set_direction(direction)
+                pself.set_position(position)
 
-        def rotate_3d(self, angle_x: Union[int, float], angle_y: Union[int, float], angle_z: Union[int, float]) -> None:
-            direction = Vector(self.entity["direction"])
-            self.set_direction(direction * Matrix(self).rotate_three_dimensional(angle_x, angle_y, angle_z))
+            def move(pself, direction: Vector) -> None:
+                pself.set_position(pself.position + direction)
 
-        def set_position(self, position: Point) -> None:
-            self.set_property("position", position)
+            def planar_rotate(pself, i: int, j: int, angle: float) -> None:
+                direction = Vector(pself.entity["direction"])
+                pself.set_direction(direction * Matrix(pself).rotate(i, j, angle))
 
-        def set_direction(self, direction: Vector) -> None:
-            self.set_property("direction", direction.normalize())
+            def rotate_3d(pself, angle_x: Union[int, float], angle_y: Union[int, float],
+                          angle_z: Union[int, float]) -> None:
+                direction = Vector(pself.entity["direction"])
+                pself.set_direction(direction * Matrix(pself).rotate_three_dimensional(angle_x, angle_y, angle_z))
 
-    class Camera(Object):
-        def __init__(self, fov: Union[int, float], draw_distance: Union[int, float],
-                     v_fov: Union[int, float, None] = None, look_at: Union[Point, None] = None):
-            self.entity.set_property("fov", fov * math.pi / 180)
-            self.entity.set_property("draw_distance", draw_distance)
-            if v_fov is not None:
-                self.entity.set_property("v_fov", v_fov)
-            if look_at is not None:
-                self.entity.set_property("look_at", look_at)
+            def set_position(pself, position: Point) -> None:
+                pself.set_property("position", position)
+
+            def set_direction(pself, direction: Vector) -> None:
+                pself.set_property("direction", direction.normalize())
+
+            @classmethod
+            def intersection_distance(pself, ray: Ray):
+                return 0
+
+        return Object
+
+    def get_camera_class(self):
+        class Camera(self.get_object_class()):
+            def __init__(self, position: Point, fov: Union[int, float],
+                         draw_distance: Union[int, float], v_fov: Union[int, float, None] = None,
+                         direction: Union[Vector, None] = None, look_at: Union[Point, None] = None):
+                super().__init__(position, direction)
+                self.entity.set_property("fov", fov * math.pi / 180)
+                self.entity.set_property("draw_distance", draw_distance)
+                self.entity.set_property("v_fov", math.atan(16 / 9 * math.tan(fov / 2)))
+
+                if v_fov is not None:
+                    self.entity.set_property("v_fov", v_fov)
+                if look_at is not None:
+                    self.entity.set_property("look_at", look_at)
+                if direction is not None:
+                    self.entity.set_property("direction", direction)
+
+            # def get_rays_matrix(pself, n: int, m: int) -> Union[Matrix[List[Ray]]]:
+            #     data = Camera(Point[1, 2, 3], 112, 121, None, 7777, None)
+            #     print(data.direction)
+            #     # if pself.direction is not None:
+            #         # alpha =
+            #         # beta =
+
+        return Camera
