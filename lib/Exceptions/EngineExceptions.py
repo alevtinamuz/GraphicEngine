@@ -4,3 +4,4 @@ class EngineExceptions(Exception):
     REMOVE_PROPERTY_ERROR = "Can't remove object property."
     ENTITY_NOT_EXIST = "Can't find this entity."
     ENTITY_LIST_ERROR = "Entity list hasn't any entities."
+    PARALLEL_RAY = "Ray is parallel to the hyper plane."

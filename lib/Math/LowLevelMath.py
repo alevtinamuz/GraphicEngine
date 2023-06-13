@@ -39,7 +39,7 @@ class Matrix:
 
     @staticmethod
     def zero_matrix(rows: int, columns: int):
-        return Matrix([[0 for _ in range(columns)] for _ in range(rows)])
+        return Matrix([[0 for i in range(columns)] for j in range(rows)])
 
     def determinant(self) -> Union[int, float]:
         if not self.is_square():

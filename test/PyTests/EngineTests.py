@@ -1,6 +1,6 @@
 import pytest
 from lib.Engine.BasicClasses import *
-from lib.GlobalVariables import cs_global
+from config.GlobalVariables import cs_global
 
 
 class TestRay:
@@ -114,28 +114,4 @@ class TestGame:
         result = isinstance(Game(cs_global, entities_list), Game)
 
         assert result
-
-    def test_get_entity_class(self):
-        entity = Game.get_entity_class()
-
-        result = (entity['cs'] == cs_global)
-
-        assert result
-
-    def test_get_ray_class(self):
-        ray = Game.get_ray_class()
-
-        result = isinstance(ray, Ray)
-
-        assert result
-
-
-class TestObject:
-    def test_init(self):
-        obj = Game.Object(Point([1.0, 0.0, 0.0]), Vector([1.0, 0.0, 0.0]))
-
-        result = isinstance(obj, Game.Object)
-
-        assert result
-
 

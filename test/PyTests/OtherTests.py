@@ -1,5 +1,5 @@
 from lib.Engine.BasicClasses import *
-from lib.GlobalVariables import *
+from config.GlobalVariables import *
 entity_1 = Entity(cs_global)
 entity_2 = Entity(cs_global)
 entities = EntitiesList([entity_1, entity_2])
