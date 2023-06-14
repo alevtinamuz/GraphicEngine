@@ -1,7 +1,7 @@
-import curses
+from curses import wrapper
 import time
 
-from config.GlobalVariables import canvas_n, canvas_m, draw_distance
+from config.GlobalVariables import canvas_n, canvas_m, draw_distance, char_map
 from lib.Math.LowLevelMath import *
 from lib.Exceptions.EngineExceptions import EngineExceptions
 from config.GlobalVariables import identifiers
@@ -83,7 +83,9 @@ class Entity:
 
 
 class EntitiesList:
-    def __init__(self, entities: list):
+    def __init__(self, entities: list = None):
+        if entities is None:
+            entities = []
         self.entities = entities
 
     def append(self, entity: Entity) -> None:
@@ -97,9 +99,9 @@ class EntitiesList:
     def get(self, identifier: Identifier) -> Entity:
         if len(self.entities) == 0:
             raise EngineExceptions(EngineExceptions.ENTITY_LIST_ERROR)
-        for entity in self.entities:
-            if Identifier.get_value(identifiers.index(identifier)) == entity['identifier']:
-                return entity
+        entity = [entity for entity in self.entities
+                  if entity['identifier'] == identifier]
+        return entity
         raise EngineExceptions(EngineExceptions.ENTITY_NOT_EXIST)
 
     def exec(self, func: Callable[[int, float, str], 'EntitiesList'], *prop, **value) -> None:
@@ -113,7 +115,7 @@ class EntitiesList:
 
 
 class Game:
-    def __init__(self, cs: CoordinateSystem, es: EventSystem = None, entities: EntitiesList = None):
+    def __init__(self, cs: CoordinateSystem, entities: EntitiesList, es: EventSystem = None):
         self.cs = cs
         self.entities = entities
         self.es = es
@@ -124,7 +126,7 @@ class Game:
         self.hyper_plane = self.get_hyper_plane_class()
         self.hyper_ellipsoid = self.get_hyper_ellipsoid_class()
         self.canvas = self.get_canvas_class()
-        self.cosole = self.get_console_class()
+        self.console = self.get_console_class()
 
     def run(self, canvas, camera):
         def main(stdscr):
@@ -133,16 +135,13 @@ class Game:
             k, p = 0, 0
 
             while True:
-                stdscr.addstr(61, 180, f"camera at: {str(camera.position.values)}")
-                stdscr.addstr(62, 180, f"camera direction: {str(camera.direction.values)}")
-
                 canvas.update(camera)
 
-                matr = canvas.res_matrix
+                matrix = canvas.res_matrix
 
-                for i in range(matr.rows):
-                    for j in range(matr.columns):
-                        stdscr.addch(i, j, matr[i][j])
+                for i in range(matrix.rows):
+                    for j in range(matrix.columns):
+                        stdscr.addch(i, j, matrix[i][j])
 
                 key = stdscr.getkey()
                 if key == "l":
@@ -150,38 +149,29 @@ class Game:
                     break
                 if key == "w":
                     dist = camera.direction
-                    self.es.trigger("move", camera, dist.norm() * 30)
-                    k += 1
-                    stdscr.addstr(59, 180, f"{k} move complete")
+                    self.es.trigger("move", camera, dist.normalize() * 30)
+
                 elif key == "s":
                     dist = (-1) * camera.direction
-                    self.es.trigger("move", camera, dist.norm() * 30)
-                    k += 1
-                    stdscr.addstr(59, 180, f"{k} move complete")
+                    self.es.trigger("move", camera, dist.normaize() * 30)
+
                 elif key == "a":
                     self.es.trigger("move", camera, 5 * Vector.vector_product(camera.direction, Vector([0, 0.2, 0])))
-                    k += 1
-                    stdscr.addstr(59, 180, f"{k} move complete")
+
                 elif key == "d":
                     self.es.trigger("move", camera, 5 * Vector.vector_product(camera.direction, Vector([0, -0.2, 0])))
-                    k += 1
-                    stdscr.addstr(59, 180, f"{k} move complete")
+
                 elif key == "KEY_UP":
                     self.es.trigger("rotate_ver", camera, camera.direction - Vector([0, 0.005, 0]))
-                    p += 1
-                    stdscr.addstr(60, 180, f"{p} rotate complete")
+
                 elif key == "KEY_DOWN":
                     self.es.trigger("rotate_ver", camera, camera.direction + Vector([0, 0.005, 0]))
-                    p += 1
-                    stdscr.addstr(60, 180, f"{p} rotate complete")
+
                 elif key == "KEY_RIGHT":
                     self.es.trigger("rotate_hor", camera, [1, 2], -0.2)
-                    p += 1
-                    stdscr.addstr(60, 180, f"{p} rotate complete")
+
                 elif key == "KEY_LEFT":
                     self.es.trigger("rotate_hor", camera, [1, 2], 0.2)
-                    p += 1
-                    stdscr.addstr(60, 180, f"{p} rotate complete")
                 # with open("log.txt", 'w') as f:
                 #     for i in canvas.distances:
                 #         f.write(str(i)+'\n')
@@ -250,69 +240,62 @@ class Game:
 
     def get_camera_class(self):
         class Camera(self.object):
-            def __init__(self, position: Point, fov: Union[int, float],
+            def __init__(pself, position: Point, fov: Union[int, float],
                          draw_distance: Union[int, float], v_fov: Union[int, float, None] = None,
                          direction: Union[Vector, None] = None, look_at: Union[Point, None] = None):
                 super().__init__(position, direction)
-                self.set_property("fov", fov * math.pi / 180)
-                self.set_property("draw_distance", draw_distance)
-                self.set_property("v_fov", math.atan(16 / 9 * math.tan(fov / 2)))
+                pself.set_property("fov", fov * math.pi / 180)
+                pself.set_property("draw_distance", draw_distance)
+                pself.set_property("v_fov", math.atan(16 / 9 * math.tan(fov / 2)))
 
                 if v_fov is not None:
-                    self.set_property("v_fov", v_fov)
+                    pself.set_property("v_fov", v_fov)
                 if look_at is not None:
-                    self.set_property("look_at", look_at)
+                    pself.set_property("look_at", look_at)
                 if direction is not None:
-                    self.set_property("direction", direction)
+                    pself.set_property("direction", direction)
 
             def get_rays_matrix(self, n: int, m: int) -> Matrix:
                 if self.direction is not None:
-                    ray_list = []
-                    alpha = self.fov
-                    beta = self.v_fov
-                    delta_alpha = alpha / n
-                    delta_beta = beta / m
-                    vector = self.direction
-                    for i in range(0, n):
-                        alpha_i = delta_alpha * i - alpha / 2
-                        tmp_list = []
-                        for j in range(0, m):
-                            beta_i = delta_beta * j - beta / 2
-                            vector_res = vector.copy()
-                            vector_res.rotate(0, 1, alpha_i)
-                            vector_res.rotate(0, 2, beta_i)
-                            if (vector % vector_res) == 0:
-                                raise Exceptions(Exceptions.ZERO_DIVISION)
-                            vector_res = (vector_res * (vector.length() ** 2 / (vector % vector_res)))
-                            tmp_list.append(vector_res)
-                        ray_list.append(tmp_list)
+                    result = Matrix.zero_matrix(n, m)
 
-                    return Matrix(ray_list)
+                    alpha, beta = self.fov, self.v_fov
+                    dalpha, dbeta = alpha / n, beta / m
+                    vec = self.direction
+
+                    for i in range(n):
+                        for j in range(m):
+                            temp_vec = vec
+                            temp_vec.rotate(0, 1, dalpha * i - alpha / 2)
+                            temp_vec.rotate(0, 2, dbeta * j - beta / 2)
+                            if (vec % temp_vec) == 0:
+                                raise Exceptions(Exceptions.ZERO_DIVISION)
+                            temp_vec = (temp_vec * (vec.length() ** 2 / (vec % temp_vec)))
+                            result[i][j] = Ray(self.cs, self.position, temp_vec)
+
+                    return result
 
                 if self.look_at is not None:
-                    ray_list = []
-                    alpha = self.fov
-                    beta = self.v_fov
-                    delta_alpha = alpha / n
-                    delta_beta = beta / m
-                    look_at_vector = Vector([i for i in self.look_at.values])
-                    position_vector = Vector([i for i in self.position.values])
-                    vector = (look_at_vector - position_vector).normalize()
-                    for i in range(0, n):
-                        alpha_i = delta_alpha * i - alpha / 2
-                        tmp_list = []
-                        for j in range(0, m):
-                            beta_i = delta_beta * j - beta / 2
-                            vector_res = vector.copy()
-                            vector_res.rotate(0, 1, alpha_i)
-                            vector_res.rotate(0, 2, beta_i)
-                            if (vector % vector_res) == 0:
-                                raise Exceptions(Exceptions.ZERO_DIVISION)
-                            vector_res = (vector_res * (vector.length() ** 2 / (vector % vector_res)))
-                            tmp_list.append(vector_res)
-                        ray_list.append(tmp_list)
+                    result = Matrix.zero_matrix(n, m)
+                    look_at_vec = Vector([x for x in self.look_at.vector])
+                    position_vec = Vector([x for x in self.position.vector])
 
-                    return Matrix(ray_list)
+                    vec = (look_at_vec - position_vec).normalize()
+
+                    alpha, beta = self.fov, self.vfov
+                    dalpha, dbeta = alpha / n, beta / m
+
+                    for i in range(n):
+                        for j in range(m):
+                            temp_vec = vec.copy()
+                            temp_vec.rotate([0, 1], dalpha * i - alpha / 2)
+                            temp_vec.rotate([0, 2], dbeta * j - beta / 2)
+                            if (vec % temp_vec) == 0:
+                                raise Exceptions(Exceptions.ZERO_DIVISION)
+                            temp_vec = (temp_vec * (vec.length() ** 2 / (vec % temp_vec)))
+                            result[i][j] = Ray(self.cs, self.position, temp_vec)
+
+                    return result
 
         return Camera
 
@@ -322,6 +305,7 @@ class Game:
                 super().__init__(position, normal.normalize())
                 pself.set_property("position", position)
                 pself.set_property("normal", normal.normalize())
+                self.entities.append(pself)
 
             def planar_rotate(self, i: int, j: int, angle: float) -> None:
                 normal = self.normal.rotate(i, j, angle)
@@ -349,7 +333,7 @@ class Game:
                     return 0
 
                 result_vector = Vector([initial_pt_ray[i] + direction_ray[i] * parameter
-                                        for i in range(direction_ray.size)])
+                                        for i in range(direction_ray.dimension)])
 
                 return result_vector.length()
 
@@ -361,6 +345,7 @@ class Game:
                 super().__init__(position, direction)
                 pself.semi_axes = semi_axes
                 pself.set_property("semi_axes", semi_axes)
+                self.entities.append(pself)
 
             def planar_rotate(self, i: int, j: int, angle: float) -> None:
                 direction = self.direction.rotate(i, j, angle)
@@ -423,14 +408,14 @@ class Game:
             def draw(self) -> None:
                 pass
 
-            def update(pself, camera: Game.get_camera_class(self)) -> None:
+            def update(pself, camera) -> None:
                 rays = camera.get_rays_matrix(pself.n, pself.m)
 
                 for i in range(pself.n):
                     for j in range(pself.m):
                         result = []
-                        for entity in self.entities:
-                            result.append(entity.intersection_distance(rays[i][j]))
+                        for ent in self.entities.entities:
+                            result.append(ent.intersection_distance(rays[i][j]))
                         result = [i for i in result if i > 0]
                         if len(result) == 0:
                             result = 0
@@ -438,8 +423,8 @@ class Game:
                             result = min(result)
                         pself.distances[i][j] = result
 
-                char_map = Game.get_console_class().char_map
-                length = len(Game.get_console_class().char_map)
+                simbols = char_map
+                length = len(char_map)
                 draw_dist = draw_distance
 
                 step = draw_dist / length
@@ -456,7 +441,7 @@ class Game:
                                 res_matrix[i][j] = '.'
                                 break
                             if matrix[i][j] < list_steps[k]:
-                                res_matrix[i][j] = char_map[k]
+                                res_matrix[i][j] = simbols[k]
                                 break
 
                 pself.res_matrix = res_matrix

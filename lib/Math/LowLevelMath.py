@@ -38,8 +38,8 @@ class Matrix:
         return self.rows, self.columns
 
     @staticmethod
-    def zero_matrix(rows: int, columns: int):
-        return Matrix([[0 for i in range(columns)] for j in range(rows)])
+    def zero_matrix(rows, columns):
+        return Matrix([[0.0 for i in range(columns)] for j in range(rows)])
 
     def determinant(self) -> Union[int, float]:
         if not self.is_square():
@@ -68,14 +68,11 @@ class Matrix:
         return result
 
     def copy(self):
-        tmp = []
-        for i in self.elements:
-            row = []
-            for j in i:
-                row.append(j)
-            tmp.append(row)
-
-        return Matrix(tmp)
+        result = Matrix.zero_matrix(self.rows, self.columns)
+        for i in range(self.rows):
+            for j in range(self.columns):
+                result[i][j] = self[i][j]
+        return result
 
     def minor(self, i: int, j: int) -> 'Matrix':
         tmp = self.copy().elements
@@ -350,6 +347,9 @@ class Vector(Matrix):
     def normalize(self) -> 'Vector':
         return self / self.length()
 
+    def copy(self):
+        return Vector(self.as_matrix().copy())
+
     def __eq__(self, other: 'Vector') -> bool:
         if other == None:
             return False
@@ -423,6 +423,9 @@ class Point(Vector):
             raise PointExceptions(PointExceptions.WRONG_SIZES)
 
         return Point([self[i] - other[i] for i in range(self.dimension)])
+
+    def as_vector(self):
+        return Vector([x for x in self.vector])
 
     def __add__(self, other: Vector) -> 'Point':
         return Point.additional(self, other)

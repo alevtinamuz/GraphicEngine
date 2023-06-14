@@ -22,8 +22,9 @@ class TestIdentifier:
         assert result
 
     def test_get_value(self):
-        identifier = Identifier()
-        result = (Identifier.get_value(2) == identifier.identifier)
+        identifier_1 = Identifier()
+        identifier_2 = Identifier()
+        result = (Identifier.get_value(3) == identifier_2.identifier)
 
         assert result
 

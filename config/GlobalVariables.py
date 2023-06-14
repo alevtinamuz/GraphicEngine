@@ -16,3 +16,7 @@ canvas_m = 320
 global draw_distance
 draw_distance = 3000
 
+global char_map
+char_map = ".:;><+r*zsvfwqkP694VOGbUAKXH8RD#$B0MNWQ%&@"
+
+
