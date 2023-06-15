@@ -348,10 +348,14 @@ class Vector(Matrix):
         return self / self.length()
 
     def copy(self):
-        return Vector(self.as_matrix().copy())
+        new_el = []
+        for i in self.vector:
+            new_el.append(i)
+        res = Vector(new_el)
+        return res
 
     def __eq__(self, other: 'Vector') -> bool:
-        if other == None:
+        if other is None:
             return False
         return self.as_matrix() == other.as_matrix()
 
@@ -386,7 +390,6 @@ class Vector(Matrix):
     is_square = attribute_error
     size = attribute_error
     determinant = attribute_error
-    copy = attribute_error
     minor = attribute_error
     inverse = attribute_error
     identity = attribute_error

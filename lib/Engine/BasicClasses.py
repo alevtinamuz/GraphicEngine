@@ -1,4 +1,4 @@
-from curses import wrapper
+import curses
 import time
 
 from config.GlobalVariables import canvas_n, canvas_m, draw_distance, char_map
@@ -141,8 +141,8 @@ class Game:
 
                 for i in range(len(matrix.elements)):
                     for j in range(len(matrix.elements[0])):
-
-                        stdscr.addch(i, j, str(matrix[i][j]))
+                        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+                        stdscr.addstr(i, j, str(matrix[i][j]), curses.color_pair(1))
 
                 key = stdscr.getkey()
 
@@ -164,22 +164,18 @@ class Game:
                     self.es.trigger("move", camera, 5 * Vector.vector_product(camera.direction, Vector([0, -0.2, 0])))
 
                 elif key == "KEY_UP":
-                    self.es.trigger("vertical_rotate", camera, camera.direction - Vector([0, 0.005, 0]))
+                    self.es.trigger("vertical_rotate", camera, camera.direction - Vector([0, 0.0002, 0]))
 
                 elif key == "KEY_DOWN":
-                    self.es.trigger("vertical_rotate", camera, camera.direction + Vector([0, 0.005, 0]))
+                    self.es.trigger("vertical_rotate", camera, camera.direction + Vector([0, 0.0002, 0]))
 
                 elif key == "KEY_RIGHT":
-                    self.es.trigger("horizontal_rotate", camera, [1, 2], -0.2)
+                    self.es.trigger("horizontal_rotate", camera, 1, 2, -0.002)
 
                 elif key == "KEY_LEFT":
-                    self.es.trigger("horizontal_rotate", camera, [1, 2], 0.2)
-                # with open("log.txt", 'w') as f:
-                #     for i in canvas.distances:
-                #         f.write(str(i)+'\n')
-                #     f.close()
+                    self.es.trigger("horizontal_rotate", camera, 1, 2, 0.002)
 
-        wrapper(main)
+        curses.wrapper(main)
 
     def update(self) -> None:
         pass
@@ -220,8 +216,8 @@ class Game:
                 self.set_position(self['position'] + direction)
 
             def planar_rotate(self, i: int, j: int, angle: float) -> None:
-                direction = Vector(self.entity["direction"])
-                self.set_direction(direction * Matrix(self).rotate(i, j, angle))
+                direction = self.direction
+                self.set_direction(direction.rotate(i, j, angle))
 
             def rotate_3d(self, angle_x: Union[int, float], angle_y: Union[int, float],
                           angle_z: Union[int, float]) -> None:
@@ -276,7 +272,7 @@ class Game:
 
                     for i in range(n):
                         for j in range(m):
-                            temp_vec = vec
+                            temp_vec = vec.copy()
                             temp_vec.rotate(0, 1, dalpha * i - alpha / 2)
                             temp_vec.rotate(0, 2, dbeta * j - beta / 2)
                             if (vec % temp_vec) == 0:
@@ -329,23 +325,26 @@ class Game:
                 self.normal = normal
 
             def intersection_distance(self, ray: Ray) -> float:
-                ray_inp_vec = ray.initial_pt.as_vector()  # x^1
-                pos_vec = self.position.as_vector()  # x^0
-                dim = ray.direction.dimension
+                normal_vector_hyper_plane = self.normal
+                initial_pt_hyper_plane = self.position.as_vector()
+                direction_ray = ray.direction
+                initial_pt_ray = ray.initial_pt
 
-                if (self.normal % ray.direction) == 0:
+                if normal_vector_hyper_plane % direction_ray == 0:
+                    if normal_vector_hyper_plane % (initial_pt_ray - initial_pt_hyper_plane) != 0:
+                        return EngineExceptions(EngineExceptions.PARALLEL_RAY)
                     return 0
 
-                t = -((self.normal % (ray_inp_vec - pos_vec)) /
-                      (self.normal % ray.direction))
+                parameter = - (normal_vector_hyper_plane % (initial_pt_ray - initial_pt_hyper_plane)) / \
+                            (normal_vector_hyper_plane % direction_ray)
 
-                if t <= 0:
+                if parameter < 0:
                     return 0
 
-                temp_vec = Vector([ray_inp_vec[i] + ray.direction[i] * t
-                                   for i in range(dim)])
+                result_vector = Vector([initial_pt_ray[i] + direction_ray[i] * parameter
+                                        for i in range(direction_ray.dimension)])
 
-                return round(temp_vec.length(), PRECISION) / 2
+                return result_vector.length()
 
         return HyperPlane
 
@@ -378,7 +377,7 @@ class Game:
                     param_1 += direction_ray[i] ** 2
                     param_2 += (initial_pt_ray[i] - initial_pt_hyper_ellipsoid[i]) * direction_ray[i]
                     param_3 += (initial_pt_ray[i] - initial_pt_hyper_ellipsoid[i]) ** 2
-                    param_4 = self.semi_axes[i] ** 2
+                    param_4 += self.semi_axes[i] ** 2
 
                 param_2 *= 2
                 param_3 -= param_4
@@ -460,6 +459,6 @@ class Game:
 
     def get_console_class(self):
         class Console(self.canvas):
-            char_map = ".:;><+r*zsvfwqkP694VOGbUAKXH8RD#$B0MNWQ%&@"
+            char_map = "MNBQWRPAw9876543210fghjkqertyzxcv;:...................       "
 
         return Console
