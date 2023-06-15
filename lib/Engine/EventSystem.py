@@ -22,7 +22,7 @@ class EventSystem:
             event(*args)
 
     def get_handled(self, name: str):
-        return self.events["name"]
+        return self.events[name]
 
     def __getitem__(self, name: str):
         return self.events[name]

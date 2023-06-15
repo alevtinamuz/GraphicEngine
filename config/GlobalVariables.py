@@ -5,8 +5,9 @@ global identifiers
 identifiers = []
 
 global cs_global
-cs_global = CoordinateSystem(Point([1.0, 0.0, 0.0]),
-                             VectorSpace([Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0])]))
+cs_global = None
+# cs_global = CoordinateSystem(Point([1.0, 0.0, 0.0]),
+#                              VectorSpace([Vector([1.0, 0.0, 0.0]), Vector([0.0, 1.0, 0.0]), Vector([0.0, 0.0, 1.0])]))
 global canvas_n
 canvas_n = 80
 

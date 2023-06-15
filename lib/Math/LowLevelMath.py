@@ -3,7 +3,7 @@ from typing import Union, List
 
 from lib.Exceptions.MathExceptions import Exceptions, MatrixExceptions, VectorExceptions, PointExceptions
 
-PRECISION = 7
+PRECISION = 11
 
 
 @property
@@ -12,7 +12,7 @@ def attribute_error():
 
 
 class Matrix:
-    def __init__(self, elements: Union[List[List[float]], 'Vector']):
+    def __init__(self, elements: Union[List[List[any]], 'Vector']):
         if isinstance(elements, Vector):
             if elements.is_transpose:
                 self.elements = elements.vector
@@ -38,8 +38,8 @@ class Matrix:
         return self.rows, self.columns
 
     @staticmethod
-    def zero_matrix(rows, columns):
-        return Matrix([[0.0 for i in range(columns)] for j in range(rows)])
+    def zero_matrix(rows: int, columns: int):
+        return Matrix([[0 for j in range(columns)] for i in range(rows)])
 
     def determinant(self) -> Union[int, float]:
         if not self.is_square():

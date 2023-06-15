@@ -10,28 +10,17 @@ es = EventSystem({"move": [game.get_camera_class().move],
 game.es = es
 
 
-canvas = game.get_canvas_class()(80, 320)
+canvas = game.get_canvas_class()(40, 160)
 
-camera = game.get_camera_class()(position=Point([-100, -100, 1]), direction=Vector([1, 1, 0]), fov=100, draw_distance=100)
+camera = game.get_camera_class()(position=Point([-100, -100, 1]), direction=Vector([1, 1, 0]), fov=80, draw_dist=draw_distance)
 camera.remove_property('identifier')
 identifiers = []
 
-# obj = g.get_hyper_ellipsoid_class()(position=Point([200, 200, 1]),
+# hyper_ellipsoid = game.get_hyper_ellipsoid_class()(position=Point([200, 200, 1]),
 #                                     direction=Vector([2, 1, 1]),
 #                                     semi_axes=[1, 1, 1])
+# identifiers = hyper_ellipsoid.get_property('identifier')
 #
-# obj1 = g.get_hyper_ellipsoid_class()(position=Point([209, 203, 4]),
-#                                      direction=Vector([2, 1, 1]),
-#                                      semi_axes=[0.1, 2, 2])
-#
-# obj2 = g.get_hyper_ellipsoid_class()(position=Point([198, 204, 6]),
-#                                      direction=Vector([2, 1, 1]),
-#                                      semi_axes=[0.1, 3, 3])
-#
-# obj3 = g.get_hyper_ellipsoid_class()(position=Point([194, 201, -3]),
-#                                      direction=Vector([2, 5, 2]),
-#                                      semi_axes=[1, 2, 2])
-
 hyper_plane = game.get_hyper_plane_class()(Point([10, 10, 0]), normal=Vector([-1, 0, 0]))
 identifiers = hyper_plane.get_property('identifier')
 

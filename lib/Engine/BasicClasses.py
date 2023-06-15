@@ -139,21 +139,23 @@ class Game:
 
                 matrix = canvas.res_matrix
 
-                for i in range(matrix.rows):
-                    for j in range(matrix.columns):
-                        stdscr.addch(i, j, matrix[i][j])
+                for i in range(len(matrix.elements)):
+                    for j in range(len(matrix.elements[0])):
+
+                        stdscr.addch(i, j, str(matrix[i][j]))
 
                 key = stdscr.getkey()
-                if key == "l":
-                    open('log.txt', 'w').close()
+
+                if key == "e":
                     break
+
                 if key == "w":
                     dist = camera.direction
                     self.es.trigger("move", camera, dist.normalize() * 30)
 
                 elif key == "s":
                     dist = (-1) * camera.direction
-                    self.es.trigger("move", camera, dist.normaize() * 30)
+                    self.es.trigger("move", camera, dist.normalize() * 30)
 
                 elif key == "a":
                     self.es.trigger("move", camera, 5 * Vector.vector_product(camera.direction, Vector([0, 0.2, 0])))
@@ -162,16 +164,16 @@ class Game:
                     self.es.trigger("move", camera, 5 * Vector.vector_product(camera.direction, Vector([0, -0.2, 0])))
 
                 elif key == "KEY_UP":
-                    self.es.trigger("rotate_ver", camera, camera.direction - Vector([0, 0.005, 0]))
+                    self.es.trigger("vertical_rotate", camera, camera.direction - Vector([0, 0.005, 0]))
 
                 elif key == "KEY_DOWN":
-                    self.es.trigger("rotate_ver", camera, camera.direction + Vector([0, 0.005, 0]))
+                    self.es.trigger("vertical_rotate", camera, camera.direction + Vector([0, 0.005, 0]))
 
                 elif key == "KEY_RIGHT":
-                    self.es.trigger("rotate_hor", camera, [1, 2], -0.2)
+                    self.es.trigger("horizontal_rotate", camera, [1, 2], -0.2)
 
                 elif key == "KEY_LEFT":
-                    self.es.trigger("rotate_hor", camera, [1, 2], 0.2)
+                    self.es.trigger("horizontal_rotate", camera, [1, 2], 0.2)
                 # with open("log.txt", 'w') as f:
                 #     for i in canvas.distances:
                 #         f.write(str(i)+'\n')
@@ -207,13 +209,15 @@ class Game:
 
     def get_object_class(self):
         class Object(self.entity):
-            def __init__(pself, position: Point, direction: Vector):
+            def __init__(pself, position: Point, direction: Vector = None):
                 super().__init__()
+                position = Point([round(x, PRECISION)
+                                 for x in position.vector])
                 pself.set_direction(direction)
                 pself.set_position(position)
 
             def move(self, direction: Vector) -> None:
-                self.set_position(self.position + direction)
+                self.set_position(self['position'] + direction)
 
             def planar_rotate(self, i: int, j: int, angle: float) -> None:
                 direction = Vector(self.entity["direction"])
@@ -225,12 +229,17 @@ class Game:
                 self.set_direction(direction * Matrix(self).rotate_three_dimensional(angle_x, angle_y, angle_z))
 
             def set_position(self, position: Point) -> None:
-                self.set_property("position", position)
+                position = Point([round(x, PRECISION)
+                                  for x in position.vector])
+
+                self['position'] = position
 
             def set_direction(self, direction: Vector) -> None:
-                if direction is not None:
-                    direction = direction.normalize()
-                self.set_property("direction", direction)
+                if direction is not None and direction is not Vector([0, 0, 0]):
+                    direction = Vector([round(x, PRECISION)
+                                        for x in direction.normalize().vector])
+
+                self.set_property('direction', direction)
 
             @classmethod
             def intersection_distance(self, ray: Ray):
@@ -240,14 +249,16 @@ class Game:
 
     def get_camera_class(self):
         class Camera(self.object):
-            def __init__(pself, position: Point, fov: Union[int, float],
-                         draw_distance: Union[int, float], v_fov: Union[int, float, None] = None,
+            def __init__(pself, position: Point, fov: Union[int, float] = None,
+                         draw_dist: Union[int, float] = None, v_fov: Union[int, float, None] = None,
                          direction: Union[Vector, None] = None, look_at: Union[Point, None] = None):
                 super().__init__(position, direction)
-                pself.set_property("fov", fov * math.pi / 180)
-                pself.set_property("draw_distance", draw_distance)
-                pself.set_property("v_fov", math.atan(16 / 9 * math.tan(fov / 2)))
-
+                pself.set_property("draw_distance", draw_dist)
+                pself.set_property("v_fov", math.atan(canvas_m/canvas_n * math.tan(fov / 2)))
+                if fov is not None:
+                    pself.set_property("fov", fov)
+                else:
+                    pself.set_property("fov", fov * math.pi / 180)
                 if v_fov is not None:
                     pself.set_property("v_fov", v_fov)
                 if look_at is not None:
@@ -302,9 +313,11 @@ class Game:
     def get_hyper_plane_class(self):
         class HyperPlane(self.object):
             def __init__(pself, position: Point, normal: Vector):
-                super().__init__(position, normal.normalize())
+                super().__init__(position)
                 pself.set_property("position", position)
                 pself.set_property("normal", normal.normalize())
+                pself.normal = normal.normalize()
+                pself.position = position
                 self.entities.append(pself)
 
             def planar_rotate(self, i: int, j: int, angle: float) -> None:
@@ -316,26 +329,23 @@ class Game:
                 self.normal = normal
 
             def intersection_distance(self, ray: Ray) -> float:
-                normal_vector_hyper_plane = self.normal
-                initial_pt_hyper_plane = self.position.as_vector()
-                direction_ray = ray.direction
-                initial_pt_ray = ray.initial_pt
+                ray_inp_vec = ray.initial_pt.as_vector()  # x^1
+                pos_vec = self.position.as_vector()  # x^0
+                dim = ray.direction.dimension
 
-                if normal_vector_hyper_plane % direction_ray == 0:
-                    if normal_vector_hyper_plane % (initial_pt_ray - initial_pt_hyper_plane) != 0:
-                        return EngineExceptions(EngineExceptions.PARALLEL_RAY)
+                if (self.normal % ray.direction) == 0:
                     return 0
 
-                parameter = - (normal_vector_hyper_plane % (initial_pt_ray - initial_pt_hyper_plane)) / \
-                              (normal_vector_hyper_plane % direction_ray)
+                t = -((self.normal % (ray_inp_vec - pos_vec)) /
+                      (self.normal % ray.direction))
 
-                if parameter < 0:
+                if t <= 0:
                     return 0
 
-                result_vector = Vector([initial_pt_ray[i] + direction_ray[i] * parameter
-                                        for i in range(direction_ray.dimension)])
+                temp_vec = Vector([ray_inp_vec[i] + ray.direction[i] * t
+                                   for i in range(dim)])
 
-                return result_vector.length()
+                return round(temp_vec.length(), PRECISION) / 2
 
         return HyperPlane
 
@@ -387,7 +397,7 @@ class Game:
                 if result_2 < 0:
                     return result_1
 
-                return min(result_1, result_2)
+                return round(min(result_1, result_2), PRECISION)
 
         return HyperEllipsoid
 
